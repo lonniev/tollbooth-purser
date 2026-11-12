@@ -154,7 +154,7 @@ runtime = OperatorRuntime(
     ),
     service_name="Purser",
     credential_validator=validate_btcpay_creds,
-    holder_auth_url="https://tollbooth-purser.fastmcp.app",
+    holder_auth_url="https://purser-mcp.fastmcp.app",
 )
 
 tool = register_standard_tools(

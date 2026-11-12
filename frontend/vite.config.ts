@@ -24,7 +24,7 @@ export default defineConfig({
       name: "Purser",
       summary: "An Organization sponsors its people's use of Tollbooth DPYC Operators: members, Project budgets, a funding ledger and analytics.",
       site: "https://purser.tollbooth-dpyc.com",
-      mcpUrl: "https://tollbooth-purser.fastmcp.app/mcp",
+      mcpUrl: "https://purser-mcp.fastmcp.app/mcp",
       toolPrefix: "purser",
       source: "https://github.com/lonniev/tollbooth-purser",
       registryName: "io.github.lonniev/tollbooth-purser",
@@ -40,7 +40,7 @@ export default defineConfig({
     allowedHosts: ['.ts.net'],
     proxy: {
       '/mcp': {
-        target: 'https://tollbooth-purser.fastmcp.app',
+        target: 'https://purser-mcp.fastmcp.app',
         changeOrigin: true,
         configure: (proxy) => proxy.on('proxyReq', (req) => {
           if (!req.getHeader('authorization')) req.setHeader('authorization', 'Bearer anonymous')

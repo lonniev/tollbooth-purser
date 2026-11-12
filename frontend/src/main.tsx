@@ -9,7 +9,7 @@ configureTollbooth({
   slug: "purser",
   appName: "Purser",
   mcpUrl: import.meta.env.VITE_MCP_URL || "/mcp",
-  operatorUrl: "https://tollbooth-purser.fastmcp.app",
+  operatorUrl: "https://purser-mcp.fastmcp.app",
 });
 
 const crash = {
