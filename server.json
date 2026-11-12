@@ -10,7 +10,7 @@
   "remotes": [
     {
       "type": "streamable-http",
-      "url": "https://tollbooth-purser.fastmcp.app/mcp"
+      "url": "https://purser-mcp.fastmcp.app/mcp"
     }
   ]
 }
