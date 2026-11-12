@@ -1,0 +1,25 @@
+# CODEOWNERS — the human gate for the agentic pipeline.
+#
+# Files covered here require @lonniev's review before merge (enforced by branch
+# protection: "Require review from Code Owners"). Files left UNCOVERED are eligible for
+# path-gated auto-merge once CI is green and QA applies qa/pass.
+#
+# Default-deny, then carve out: CODEOWNERS is LAST-MATCH-WINS, so the catch-all comes
+# first and anything not imagined yet lands under review.
+
+# Everything needs review …
+* @lonniev
+
+# … except the paths the pipeline is trusted to land on its own. These match
+# auto-merge.yml's low-risk allowlist, so what CODEOWNERS releases is exactly what
+# auto-merge will take.
+/tests/
+*.md
+
+# WHAT A PLAUSIBLE EDIT COULD BREAK HERE: this Operator keeps an Organization's people,
+# budgets and every funding it paid. Review with that in mind:
+# - the owner gate (PurserStore.owned / server._org) on every tool — dropping one lets anyone
+#   who knows an org_id read or change another business's books;
+# - data_enc: names, labels, budgets and fundings are financial data and are stored only
+#   encrypted; the plaintext columns are ids, npubs and times, nothing else;
+# - input validation on npubs, operator URLs and amounts: tool arguments are adversarial.
