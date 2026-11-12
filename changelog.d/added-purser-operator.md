@@ -1,0 +1,1 @@
+- Purser, an Operator where an Organization sponsors its people's use of Tollbooth DPYC Operators. The owner's npub owns an Organization: its members, Projects with budgets, the Operators its people use, and a ledger of every funding it paid. Names, budgets and fundings are stored encrypted.
