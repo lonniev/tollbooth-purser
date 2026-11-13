@@ -28,7 +28,7 @@ export default function ProveAt({ operator, onProven }: { operator: string; onPr
   if (proven) {
     return (
       <span className="flex items-center gap-1 text-xs" style={{ color: "var(--tb-ok)" }}>
-        <CheckCircle2 size={14} aria-hidden /> Proven
+        <CheckCircle2 size={14} aria-hidden /> Authenticated
       </span>
     );
   }
@@ -47,7 +47,7 @@ export default function ProveAt({ operator, onProven }: { operator: string; onPr
     <span className="flex flex-wrap items-center gap-2">
       <button type="button" className="chip chip-accent" disabled={courier.busy}
         onClick={() => void courier.send(() => client.proveStart(session.npub, "Purser reads and funds your people here"))}>
-        <KeyRound size={14} aria-hidden /> Prove me here
+        <KeyRound size={14} aria-hidden /> Authenticate here
       </button>
       {courier.problem && <span className="error w-full text-xs">{courier.problem}</span>}
     </span>

@@ -1,0 +1,2 @@
+- Organizations has its own page, left of Projects: a table of every Organization (with its count) whose people, Projects and Operators are links; a row opens it to rename, show it, and choose its Operators. Setup and the header's gear are gone; the Organization's name sits at the top left.
+- "Prove yourself" is now "Authenticate" ("Authenticate here", "Authenticated").

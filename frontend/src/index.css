@@ -233,7 +233,7 @@ table.rows th { white-space: nowrap; }
 table.ledger th.text-right, table.ledger td.text-right { text-align: right; }
 
 /* The Organization the console shows, at the right: its name or a switcher, then its settings. */
-.org-head { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; }
+.org-head { display: flex; align-items: center; justify-content: flex-start; gap: 0.5rem; }
 .org-pick { font: inherit; font-size: 1.25rem; font-weight: 600; color: inherit; background: transparent; border: 1px solid var(--tb-line); border-radius: 0.5rem; padding: 0.25rem 0.5rem; }
 
 /* One person, open: who, their balance at each Operator, their Projects, and leaving. */
@@ -272,7 +272,7 @@ table.ledger th.text-right, table.ledger td.text-right { text-align: right; }
 /* A named entity is a link to it. */
 .ent { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: 3px; }
 .ent:hover, .ent:focus-visible { color: var(--tb-accent); text-decoration-color: currentColor; }
-/* The Operator a link opened, on Setup. */
+/* The Operator a link opened, on Organizations. */
 .op-line.op-on { outline: 2px solid var(--tb-accent); outline-offset: 4px; border-radius: 0.5rem; }
 .ent-svg { fill: var(--chart-muted); text-decoration: underline; cursor: pointer; }
 .ent-svg:hover, .ent-svg:focus-visible { fill: var(--tb-accent); outline: none; }

@@ -7,7 +7,7 @@ export const TOURS: Record<string, Tour> = {
   wallet: walletTour(),
   account: accountTour("account", [
     { target: "account.sponsor", title: "You as a sponsor", says: "Your npub is what your people ask for at each Operator. Copy it, or the invitation, and send it to them." },
-    { target: "account.proven", title: "Where you are proven", says: "Each Operator your Organization uses, and whether this page acts as you there. Prove yourself once at each." },
+    { target: "account.proven", title: "Where you are authenticated", says: "Each Operator your Organization uses, and whether this page acts as you there. Authenticate once at each." },
     { target: "account.tutorial", title: "Live tutorial", says: "Turn the page tours on or off for this device." },
   ]),
   overview: { page: "overview", steps: [
@@ -32,9 +32,9 @@ export const TOURS: Record<string, Tour> = {
     { target: "page.search", title: "Find a top-up", says: "Search by person, Project or Operator." },
     { target: "ledger.csv", title: "For the books", says: "Download every top-up purchased as a CSV file for your bookkeeping." },
   ] },
-  setup: { page: "setup", steps: [
-    { target: "setup.org", title: "Your Organization", says: "Its name, as your people see it in their DMs. Tap + to start another Organization." },
+  organizations: { page: "organizations", steps: [
+    { target: "orgs.table", title: "Your Organizations", says: "Each one, with its people, Projects and Operators. Tap a row to open it, and + to start another." },
     { target: "page.search", title: "Find an Operator", says: "Search the registry by name or words, or paste an Operator's npub." },
-    { target: "setup.operators", title: "Your Operators", says: "The Operators your people use. Prove yourself at each once, so Purser can read and pay for your people there." },
+    { target: "orgs.operators", title: "Its Operators", says: "The Operators its people use. Authenticate at each once, so Purser can read and pay for your people there." },
   ] },
 };
