@@ -95,15 +95,17 @@ function Footer() {
 
 function Home() {
   return (
-    <div className="page grid gap-4 py-10">
+    <div className="page py-10">
+      <div className="card grid max-w-2xl gap-4 p-6">
       <h1 className="text-3xl font-semibold">Sponsor your people's Operators.</h1>
-      <p className="muted max-w-2xl">
+      <p className="muted">
         Your Organization pays for the people it sponsors at each Tollbooth DPYC™ Operator they use.
         Each person asks your npub to sponsor them there, or you offer, and the other approves.
         You see their balances, pay their top-ups from your own wallet, book each one to a Project, and watch where the sats go.
         You never spend their balance, and they keep their own keys.
       </p>
       <div><Link to="/signin" className="chip chip-accent">Sign in with your npub</Link></div>
+      </div>
     </div>
   );
 }
@@ -150,6 +152,7 @@ function Site() {
   const { session, gate } = useAppShell();
   return (
     <BrowserRouter>
+      <div aria-hidden="true" className="backdrop" />
       <Nav />
       <main className="flex-1">
         <OrgProvider key={session.npub} enabled={session.signedIn}>
