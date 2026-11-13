@@ -4,12 +4,18 @@
  * after its panel closed, or by another route. Booking one names its Project.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Download } from "lucide-react";
+import { filterRows, pageRows } from "@tollbooth-dpyc/web";
+import { tourTarget, useTour } from "@tollbooth-dpyc/web/react";
 import { sats } from "../components/Charts";
+import { HelpButton, Paging, SearchButton, Toolbar } from "../components/Controls";
+import Term from "../components/Term";
 import { ledgerCsv, unbooked, type Funding, type Unbooked } from "../lib/analytics";
 import { memberName, operatorName, useOrg } from "../lib/org";
 import { fundingLedger, recordFunding, statements } from "../lib/purser";
+
+const PAGE = 50;
 
 /** How far back the statements are read for purchases to book. */
 const LOOKBACK_DAYS = 90;
@@ -19,6 +25,9 @@ export default function Ledger() {
   const [rows, setRows] = useState<Funding[] | null>(null);
   const [loose, setLoose] = useState<Unbooked[]>([]);
   const [problem, setProblem] = useState("");
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(0);
+  useTour("ledger", { ready: rows !== null });
 
   const load = useCallback(async () => {
     if (!detail) return;
@@ -38,8 +47,15 @@ export default function Ledger() {
     void load();
   }, [load]);
 
+  const project = useCallback((id: string) => detail?.projects.find((p) => p.project_id === id)?.name ?? id, [detail]);
+  const shown = useMemo(
+    () => filterRows(rows ?? [], { search: query }, {
+      text: (f) => `${project(f.project_id)} ${memberName(detail, f.staff_npub)} ${f.staff_npub} ${detail ? operatorName(detail, f.operator_url) : ""} ${f.invoice_id}`,
+    }),
+    [rows, query, detail, project],
+  );
+  useEffect(() => setPage(0), [query]);
   if (!detail) return null;
-  const project = (id: string) => detail.projects.find((p) => p.project_id === id)?.name ?? id;
 
   function download() {
     if (!rows || !detail) return;
@@ -53,9 +69,9 @@ export default function Ledger() {
   return (
     <div className="grid gap-3">
     {loose.length > 0 && (
-      <section className="card panel">
-        <h2 className="panel-title mb-1">Paid, not booked</h2>
-        <p className="muted mb-2 text-sm">Settled purchases at your Operators that no Project names yet. Book the ones your Organization paid.</p>
+      <section className="card panel" {...tourTarget("ledger.unbooked")}>
+        <Toolbar title="To book" count={loose.length} />
+        <p className="muted mb-2 text-sm">Settled top-ups at your Operators still waiting for their <Term of="project" label="Project" />. Book the ones your Organization paid.</p>
         <div className="grid gap-2">
           {loose.map((u) => (
             <BookRow key={`${u.operator}|${u.invoice_id}`} item={u} onBooked={() => void load()} />
@@ -64,17 +80,20 @@ export default function Ledger() {
       </section>
     )}
     <section className="card panel">
-      <div className="panel-head">
-        <h2 className="panel-title">Fundings</h2>
-        <button type="button" className="chip" disabled={!rows?.length} onClick={download}>
+      <Toolbar title={<Term of="funding" label="Fundings" />} count={rows?.length}>
+        <SearchButton value={query} onChange={setQuery} label="Find by person, Project or Operator" />
+        <HelpButton page="ledger" />
+        <button type="button" className="chip" disabled={!rows?.length} onClick={download} {...tourTarget("ledger.csv")}>
           <Download size={14} aria-hidden /> CSV
         </button>
-      </div>
+      </Toolbar>
       {problem && <p className="error">{problem}</p>}
       {rows === null ? (
         <p className="muted text-sm">Loading…</p>
       ) : rows.length === 0 ? (
         <p className="muted text-sm">No fundings yet. A top-up from People lands here.</p>
+      ) : shown.length === 0 ? (
+        <p className="muted text-sm">No funding matches that.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="ledger">
@@ -82,7 +101,7 @@ export default function Ledger() {
               <tr><th>Paid</th><th>Project</th><th>Person</th><th>Operator</th><th className="text-right">Sats</th></tr>
             </thead>
             <tbody>
-              {rows.map((f) => (
+              {pageRows(shown, page, PAGE).map((f) => (
                 <tr key={f.funding_id}>
                   <td className="num">{new Date(f.paid_at * 1000).toLocaleDateString()}</td>
                   <td>{project(f.project_id)}</td>
@@ -93,6 +112,7 @@ export default function Ledger() {
               ))}
             </tbody>
           </table>
+          <Paging page={page} pageSize={PAGE} total={shown.length} onPage={setPage} />
         </div>
       )}
     </section>

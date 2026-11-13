@@ -237,12 +237,17 @@ export function projectBurn(
   projects: { project_id: string; name: string; budget_sats: number; period: string }[],
   fundings: Funding[],
   today: Date,
-): { key: string; funded: number; budget: number }[] {
+): { id: string; key: string; funded: number; budget: number }[] {
   return projects.map((p) => {
     const since = periodStart(p.period, today);
     const funded = sum(fundings.filter((f) => f.project_id === p.project_id && f.paid_at >= since).map((f) => f.sats));
-    return { key: p.name, funded, budget: p.budget_sats };
+    return { id: p.project_id, key: p.name, funded, budget: p.budget_sats };
   });
+}
+
+/** The earliest moment any of these periods began: how far back their burn reads. */
+export function earliestPeriodStart(periods: string[], today: Date): number {
+  return periods.length ? Math.min(...periods.map((p) => periodStart(p, today))) : Math.floor(today.getTime() / 1000);
 }
 
 /** Unix seconds when the period holding `today` began (UTC); 0 for "none". */

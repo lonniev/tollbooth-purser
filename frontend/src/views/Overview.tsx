@@ -11,11 +11,15 @@ import {
   BudgetBars, DailyLines, FigureTile, HBars, OTHER, Panel, RankedList, SLOTS, StackedDaily, StatTile, sats, slotColor,
 } from "../components/Charts";
 import { operatorClient } from "@tollbooth-dpyc/web";
+import { tourTarget, useTour } from "@tollbooth-dpyc/web/react";
+import { HelpButton } from "../components/Controls";
 import { bareTool, foldSeries, overview, projectBurn, splitToolKey, type Funding, type Statement } from "../lib/analytics";
 import { memberName, operatorName, useOrg } from "../lib/org";
 import { fundingLedger, statements } from "../lib/purser";
 
 const RANGES = [7, 30, 90] as const;
+/** The Projects the Overview draws: the nearest their budgets; the rest are on Projects. */
+const BUDGETS_SHOWN = 8;
 
 export default function Overview() {
   const { detail } = useOrg();
@@ -27,6 +31,7 @@ export default function Overview() {
   const [problem, setProblem] = useState("");
   const [tick, setTick] = useState(0);
   const [prefixes, setPrefixes] = useState<Record<string, string>>({});
+  useTour("overview", { ready: Boolean(detail?.members.length && detail.operators.length) });
 
   useEffect(() => {
     if (!detail) return;
@@ -61,7 +66,9 @@ export default function Overview() {
 
   const o = useMemo(() => overview(read, fundings, days, new Date()), [read, fundings, days]);
   const burn = useMemo(
-    () => (detail ? projectBurn(detail.projects, fundings, new Date()) : []),
+    () => (detail ? projectBurn(detail.projects, fundings, new Date()) : [])
+      .sort((a, b) => (b.budget ? b.funded / b.budget : 0) - (a.budget ? a.funded / a.budget : 0) || b.funded - a.funded)
+      .slice(0, BUDGETS_SHOWN),
     [detail, fundings],
   );
 
@@ -91,20 +98,23 @@ export default function Overview() {
 
   return (
     <div className="grid gap-3">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2" {...tourTarget("overview.range")}>
         {RANGES.map((r) => (
           <button key={r} type="button" onClick={() => setDays(r)} aria-pressed={days === r} className={days === r ? "chip chip-on" : "chip"}>
             {r} days
           </button>
         ))}
-        <button type="button" onClick={() => setTick((t) => t + 1)} disabled={loading} className="chip ml-auto" aria-label="Refresh">
-          <RefreshCw size={14} aria-hidden className={loading ? "animate-spin" : ""} />
-        </button>
+        <span className="ml-auto flex items-center gap-2">
+          <HelpButton page="overview" />
+          <button type="button" onClick={() => setTick((t) => t + 1)} disabled={loading} className="icon-btn" aria-label="Refresh" title="Read again">
+            <RefreshCw size={16} aria-hidden className={loading ? "animate-spin" : ""} />
+          </button>
+        </span>
       </div>
 
       {problem && <p className="error">{problem}</p>}
 
-      <div className="tiles">
+      <div className="tiles" {...tourTarget("overview.tiles")}>
         <StatTile label="Funded (sats)" tile={o.funded} upIsGood={false} />
         <StatTile label="Used (api_sats)" tile={o.used} upIsGood={false} />
         <StatTile label="Calls" tile={o.calls} />
@@ -117,7 +127,7 @@ export default function Overview() {
       </div>
 
       <div className="grid-2">
-        <Panel title="Top people" action={<Link to="/people" className="text-xs underline">People ›</Link>}>
+        <Panel title="Top people" tour="overview.people" action={<Link to="/people" className="text-xs underline">People ›</Link>}>
           <RankedList rows={o.topStaff} name={(k) => memberName(detail, k)} unit="api_sats" empty="No use in this period." />
         </Panel>
         <Panel title="Top Operators" action={<Link to="/setup" className="text-xs underline">Operators ›</Link>}>
@@ -151,23 +161,28 @@ export default function Overview() {
         <Panel title="Expired (demurrage)">
           <HBars rows={o.expiredByStaff} name={(k) => memberName(detail, k)} unit="api_sats" empty="Nothing has expired." />
         </Panel>
-        <Panel title="Project budgets, this period" action={<Link to="/projects" className="text-xs underline">Projects ›</Link>}>
+        <Panel title="Project budgets, this period" tour="overview.budgets" action={<Link to="/projects" className="text-xs underline">{detail.projects.length > BUDGETS_SHOWN ? `All ${detail.projects.length} ›` : "Projects ›"}</Link>}>
           <BudgetBars rows={burn} />
         </Panel>
       </div>
 
       {missing.length > 0 && (
         <Panel title="Not read">
-          <p className="muted mb-2 text-sm">
-            These accounts did not answer. Either you have not proven yourself at that Operator yet (Setup), or the person has not yet asked you to sponsor them there (People).
-          </p>
-          <ul className="text-sm">
-            {missing.map((m) => (
-              <li key={`${m.staff}|${m.operator}`}>
-                {memberName(detail, m.staff)} at {operatorName(detail, m.operator)}: <span className="muted">{m.why}</span>
-              </li>
-            ))}
-          </ul>
+          <details>
+            <summary className="cursor-pointer text-sm">
+              {missing.length.toLocaleString("en-US")} {missing.length === 1 ? "account" : "accounts"} did not answer
+            </summary>
+            <p className="muted my-2 text-sm">
+              Either you have yet to prove yourself at that Operator (Setup), or the person has yet to ask you to sponsor them there (People).
+            </p>
+            <ul className="max-h-64 overflow-y-auto text-sm">
+              {missing.map((m) => (
+                <li key={`${m.staff}|${m.operator}`}>
+                  {memberName(detail, m.staff)} at {operatorName(detail, m.operator)}: <span className="muted">{m.why}</span>
+                </li>
+              ))}
+            </ul>
+          </details>
         </Panel>
       )}
     </div>

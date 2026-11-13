@@ -9,6 +9,10 @@
 
 import { callTool, operatorClient, type AccountStatementResult, type CheckBalanceResult } from "@tollbooth-dpyc/web";
 import type { Funding, Statement } from "./analytics.ts";
+import { mapLimit } from "./limit.ts";
+
+/** How many accounts are read at once: steady for the browser and kind to the Operators. */
+const READS_AT_ONCE = 6;
 
 export interface Org {
   org_id: string;
@@ -155,14 +159,14 @@ export const statementAt = (operator: string, staff: string, days: number) =>
   read<AccountStatementResult>(operator, "account_statement", { npub: staff, days });
 
 /**
- * Every member's statement at every Operator, read at once. A pair that
+ * Every member's statement at every Operator, a few at a time. A pair that
  * refuses (no sponsorship there yet, or a sleeping Operator) is reported, not fatal.
  */
 export async function statements(
   members: Member[], operators: Operator[], days: number,
 ): Promise<{ read: Statement[]; missing: { staff: string; operator: string; why: string }[] }> {
   const pairs = members.flatMap((m) => operators.map((o) => ({ staff: m.staff_npub, operator: o.url })));
-  const answers = await Promise.all(pairs.map((p) => statementAt(p.operator, p.staff, days)));
+  const answers = await mapLimit(pairs, READS_AT_ONCE, (p) => statementAt(p.operator, p.staff, days));
   const out: Statement[] = [];
   const missing: { staff: string; operator: string; why: string }[] = [];
   answers.forEach((a, i) => {
