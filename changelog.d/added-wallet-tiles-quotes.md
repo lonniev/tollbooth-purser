@@ -1,0 +1,2 @@
+- Wallet top-up tiles are dressed as a purser's coin: Doubloon, Purse, Wages, Payroll and Strongbox, brass rising tile to tile; the balance sits to the right.
+- Waits show quotations on paying people, working, and building your own, while the Organization, the Ledger and the Overview load.

@@ -13,6 +13,7 @@ import {
 import { operatorClient } from "@tollbooth-dpyc/web";
 import { tourTarget, useTour } from "@tollbooth-dpyc/web/react";
 import { HelpButton } from "../components/Controls";
+import Waiting from "../components/Waiting";
 import { OperatorLink, PersonLink } from "../components/EntityLink";
 import { operatorHref, personHref, projectHref } from "../lib/links";
 import { bareTool, foldSeries, overview, projectBurn, splitToolKey, type Funding, type Statement } from "../lib/analytics";
@@ -115,6 +116,7 @@ export default function Overview() {
       </div>
 
       {problem && <p className="error">{problem}</p>}
+      {loading && read.length === 0 && <div className="card panel"><Waiting heading="Reading each account at each Operator…" /></div>}
 
       <div className="tiles" {...tourTarget("overview.tiles")}>
         <StatTile label="Funded (sats)" tile={o.funded} upIsGood={false} />

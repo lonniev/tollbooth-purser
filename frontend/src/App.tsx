@@ -1,6 +1,8 @@
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { BarChart3, BookOpen, FolderKanban, ReceiptText, Settings, Users, Wallet as WalletIcon } from "lucide-react";
 import { AppShell, SiteNav, TourProvider, Wallet, matchesPath, useAppShell, useTour } from "@tollbooth-dpyc/web/react";
+import Waiting from "./components/Waiting";
+import { decorateTile } from "./lib/tiles";
 import type { ReactNode } from "react";
 import { OrgProvider, useOrg } from "./lib/org";
 import { TOURS } from "./lib/tours";
@@ -128,7 +130,7 @@ function Console({ children }: { children: ReactNode }) {
 function OrgGate({ children }: { children: ReactNode }) {
   const { detail, loading, problem } = useOrg();
   const { pathname } = useLocation();
-  if (loading && !detail) return <div className="page muted text-sm">Loading your Organization…</div>;
+  if (loading && !detail) return <div className="page"><div className="card panel"><Waiting heading="Opening your Organization…" /></div></div>;
   if (problem && !detail) return <div className="page error">{problem}</div>;
   if (!detail && !pathname.startsWith("/setup")) return <Navigate to="/setup" replace />;
   return (
@@ -167,7 +169,7 @@ function SignIn({ gate }: { gate: ReactNode }) {
 
 function WalletPage() {
   useTour("wallet");
-  return <div className="page"><Wallet /></div>;
+  return <div className="page"><Wallet decorateTile={decorateTile} /></div>;
 }
 
 function Site() {
