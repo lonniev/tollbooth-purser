@@ -31,6 +31,8 @@ const series = o.operatorOrder.map((k, i) => ({ key: k, label: k, color: slotCol
 const data = o.usageByOperator.map(({ date, values }) => ({ date, ...values }));
 
 createRoot(document.getElementById("root")!).render(
+  <>
+  <div aria-hidden="true" className="backdrop" />
   <div className="page grid gap-3">
     <h1 className="text-xl font-semibold">Acme Field Team</h1>
     <div className="tiles">
@@ -51,5 +53,6 @@ createRoot(document.getElementById("root")!).render(
       <Panel title="Expired (demurrage)"><HBars rows={o.expiredByStaff} name={(k) => k} unit="api_sats" empty="Nothing has expired." /></Panel>
       <Panel title="Project budgets, this period"><BudgetBars rows={burn} /></Panel>
     </div>
-  </div>,
+  </div>
+  </>,
 );

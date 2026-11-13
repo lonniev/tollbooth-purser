@@ -20,6 +20,8 @@
   --tb-line: #e1e0d9;
   --tb-ok: #006300;
   --page: #f9f9f7;
+  /* The wash over the backdrop art, so cards and headings stay legible. */
+  --backdrop-dim: rgb(249 249 247 / 0.7);
 
   /* Charts: the validated reference palette, light steps (dataviz references/palette.md). */
   --series-1: #2a78d6;
@@ -48,6 +50,7 @@
     --tb-line: #2c2c2a;
     --tb-ok: #0ca30c;
     --page: #0d0d0d;
+    --backdrop-dim: rgb(13 13 13 / 0.62);
     --series-1: #3987e5;
     --series-2: #d95926;
     --series-3: #199e70;
@@ -64,6 +67,7 @@
 }
 
 :root[data-theme="dark"] {
+  --backdrop-dim: rgb(13 13 13 / 0.62);
   --tb-accent: #3987e5;
   --tb-surface: #1a1a19;
   --tb-surface-2: #232321;
@@ -96,6 +100,20 @@ body {
 }
 
 #root { display: flex; flex-direction: column; flex: 1; }
+
+/* Payday on the ship: the purser pays the crew from the book. Behind everything, washed. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  background: url("./assets/payday.jpg") center / cover no-repeat;
+}
+.backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--backdrop-dim);
+}
 
 .page { width: 100%; max-width: 72rem; margin: 0 auto; padding: 1rem; }
 .card { background: var(--tb-surface); border: 1px solid var(--tb-line); border-radius: 0.75rem; }
