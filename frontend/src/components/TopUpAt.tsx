@@ -78,7 +78,7 @@ export default function TopUpAt({ orgId, operator, staff, projects, onDone }: {
   }, [phase, op, staff, orgId, project, operator, amount, onDone]);
 
   if (!eligible.length) {
-    return <p className="muted text-sm">Put them on a Project first: every top-up is booked to one.</p>;
+    return <p className="muted text-sm">Put them on a Project first: every top-up is assigned to one.</p>;
   }
 
   if (phase.kind === "awaiting") {
@@ -93,7 +93,7 @@ export default function TopUpAt({ orgId, operator, staff, projects, onDone }: {
           <button type="button" className="chip" onClick={() => setPhase({ kind: "idle" })}>Cancel</button>
         </div>
         <p className="muted" aria-live="polite">
-          {phase.checks < MAX_CHECKS ? "Waiting for payment…" : "Still unpaid. It is booked once it settles and you look again."}
+          {phase.checks < MAX_CHECKS ? "Waiting for payment…" : "Still unpaid. It is assigned once it settles and you look again."}
         </p>
       </div>
     );

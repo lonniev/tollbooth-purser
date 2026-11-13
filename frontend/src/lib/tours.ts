@@ -25,12 +25,12 @@ export const TOURS: Record<string, Tour> = {
   projects: { page: "projects", steps: [
     { target: "page.add", title: "New Project", says: "Tap + to name a budget and its period." },
     { target: "page.search", title: "Find a Project", says: "Search by name, or by a person on it." },
-    { target: "projects.table", title: "Your Projects", says: "Each line shows the period's funding against its budget. Tap one to edit it or choose its people." },
+    { target: "projects.table", title: "Your Projects", says: "Each line shows the period's top-ups against its budget. Tap one to edit it or choose its people." },
   ] },
   ledger: { page: "ledger", steps: [
-    { target: "ledger.unbooked", title: "To book", says: "Settled top-ups still waiting for their Project. Choose it and book each one." },
-    { target: "page.search", title: "Find a funding", says: "Search by person, Project or Operator." },
-    { target: "ledger.csv", title: "For the books", says: "Download every funding as a CSV file for your bookkeeping." },
+    { target: "ledger.unbooked", title: "Assign to Project", says: "Settled top-ups still waiting for their Project. Choose it and assign each one." },
+    { target: "page.search", title: "Find a top-up", says: "Search by person, Project or Operator." },
+    { target: "ledger.csv", title: "For the books", says: "Download every top-up purchased as a CSV file for your bookkeeping." },
   ] },
   setup: { page: "setup", steps: [
     { target: "setup.org", title: "Your Organization", says: "Its name, as your people see it in their DMs. Tap + to start another Organization." },

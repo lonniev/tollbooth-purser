@@ -309,7 +309,7 @@ function MemberDetail({ member, last, onChanged, onRemoved }: {
 
   async function remove() {
     const sure = window.confirm(
-      `Remove ${member.label} from ${orgName}?\n\nThey come off every Project here. Past fundings stay in the Ledger. Your sponsorship at each Operator stays until either of you stops it there.`,
+      `Remove ${member.label} from ${orgName}?\n\nThey come off every Project here. Past top-ups stay in the Ledger. Your sponsorship at each Operator stays until either of you stops it there.`,
     );
     if (!sure) return;
     await removeMember(orgId, member.staff_npub);
@@ -388,7 +388,7 @@ function MemberDetail({ member, last, onChanged, onRemoved }: {
       <section className="member-leave">
         <p className="muted text-sm">
           Removing {member.label} takes them off every Project in {orgName}.
-          Past fundings stay in the Ledger.
+          Past top-ups stay in the Ledger.
           Your sponsorship at each Operator stays until either of you stops it there.
         </p>
         <button type="button" className="chip chip-danger" onClick={() => void remove()}>

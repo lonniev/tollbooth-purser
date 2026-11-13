@@ -70,7 +70,7 @@ export default function Ledger() {
     if (!rows || !detail) return;
     const csv = ledgerCsv(rows, { project, staff: (n) => memberName(detail, n), operator: (u) => operatorName(detail, u) });
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-    const a = Object.assign(document.createElement("a"), { href: url, download: `${detail.organization.name}-fundings.csv` });
+    const a = Object.assign(document.createElement("a"), { href: url, download: `${detail.organization.name}-top-ups.csv` });
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -79,8 +79,8 @@ export default function Ledger() {
     <div className="grid gap-3">
     {loose.length > 0 && (
       <section className="card panel" {...tourTarget("ledger.unbooked")}>
-        <Toolbar title="To book" count={loose.length} />
-        <p className="muted mb-2 text-sm">Settled top-ups at your Operators still waiting for their <Term of="project" label="Project" />. Book the ones your Organization paid.</p>
+        <Toolbar title="Assign to Project" count={loose.length} />
+        <p className="muted mb-2 text-sm">Settled top-ups at your Operators still waiting for their <Term of="project" label="Project" />. Assign the ones your Organization paid.</p>
         <div className="grid gap-2">
           {loose.map((u) => (
             <BookRow key={`${u.operator}|${u.invoice_id}`} item={u} onBooked={() => void load()} />
@@ -89,7 +89,7 @@ export default function Ledger() {
       </section>
     )}
     <section className="card panel">
-      <Toolbar title={<Term of="funding" label="Fundings" />} count={rows?.length}>
+      <Toolbar title={<Term of="funding" label="Top-ups Purchased" />} count={rows?.length}>
         <SearchButton value={query} onChange={setQuery} label="Find by person, Project or Operator" />
         <HelpButton page="ledger" />
         <button type="button" className="chip" disabled={!rows?.length} onClick={download} {...tourTarget("ledger.csv")}>
@@ -100,9 +100,9 @@ export default function Ledger() {
       {rows === null ? (
         <p className="muted text-sm">Loading…</p>
       ) : rows.length === 0 ? (
-        <p className="muted text-sm">No fundings yet. A top-up from People lands here.</p>
+        <p className="muted text-sm">No top-ups purchased yet. A top-up from People lands here.</p>
       ) : shown.length === 0 ? (
-        <p className="muted text-sm">No funding matches that.</p>
+        <p className="muted text-sm">No top-up matches that.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="ledger">
@@ -181,7 +181,7 @@ function BookRow({ item, onBooked }: { item: Unbooked; onBooked: () => void }) {
           <select className="field" value={project} onChange={(e) => setProject(e.target.value)} aria-label="Project">
             {eligible.map((p) => <option key={p.project_id} value={p.project_id}>{p.name}</option>)}
           </select>
-          <button type="button" className="chip chip-accent" disabled={busy || !project} onClick={() => void book()}>Book</button>
+          <button type="button" className="chip chip-accent" disabled={busy || !project} onClick={() => void book()}>Assign</button>
         </>
       ) : (
         <span className="muted text-xs">Put them on a Project first</span>
