@@ -19,9 +19,9 @@ const WELCOME = "Sponsor your people's use of Tollbooth DPYC Operators, and see 
 
 const PAGES = [
   { href: "/overview", label: "Overview", icon: <BarChart3 size={18} aria-hidden /> },
-  { href: "/people", label: "People", icon: <Users size={18} aria-hidden /> },
   { href: "/organizations", label: "Organizations", icon: <Building2 size={18} aria-hidden /> },
   { href: "/projects", label: "Projects", icon: <FolderKanban size={18} aria-hidden /> },
+  { href: "/people", label: "People", icon: <Users size={18} aria-hidden /> },
   { href: "/ledger", label: "Ledger", icon: <ReceiptText size={18} aria-hidden /> },
   { href: "/wallet", label: "Wallet", icon: <WalletIcon size={18} aria-hidden /> },
   { href: "/guide", label: "Guide", icon: <BookOpen size={18} aria-hidden /> },
