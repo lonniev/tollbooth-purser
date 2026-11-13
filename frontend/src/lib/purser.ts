@@ -93,15 +93,42 @@ const ORACLE = "https://dpyc-oracle.fastmcp.app/mcp";
 export interface Service {
   display_name: string;
   url: string;
-  live?: boolean | string;
+  npub?: string;
+  registry_description?: string;
 }
 
-/** The Operators in the DPYC registry, as the Oracle lists them. */
-export async function listOperators(): Promise<Service[]> {
-  const r = await operatorClient(ORACLE, { prefix: "" }).callTool<{ services?: Service[] }>(
-    "list_services", { probe: false, kind: "operator" }, { bestEffort: true },
-  );
-  return (r.services ?? []).filter((s) => s.url?.startsWith("https://"));
+/** The registry's Operators, once per page: the Oracle lists them, the page searches them. */
+let registry: Promise<Service[]> | null = null;
+
+function operatorsInRegistry(): Promise<Service[]> {
+  registry ??= operatorClient(ORACLE, { prefix: "" })
+    .callTool<{ services?: Service[] }>("list_services", { probe: false, kind: "operator" }, { bestEffort: true })
+    .then((r) => (r.services ?? []).filter((s) => s.url?.startsWith("https://")))
+    .catch((e) => {
+      registry = null;
+      throw e;
+    });
+  return registry;
+}
+
+/**
+ * Operators matching `query`: by npub exactly (the Oracle resolves it), or by
+ * words found in a name, a description or an address. At most `limit` come back;
+ * a page never draws the whole registry.
+ */
+export async function findOperators(query: string, limit = 8): Promise<Service[]> {
+  const q = query.trim();
+  if (!q) return [];
+  if (q.startsWith("npub1")) {
+    const r = await operatorClient(ORACLE, { prefix: "" }).callTool<{
+      success?: boolean; service?: { name?: string; url?: string; npub?: string; role?: string };
+    }>("resolve_service", { npub: q }, { bestEffort: true });
+    const s = r.service;
+    return r.success && s?.url && s.role !== "authority" ? [{ display_name: s.name ?? s.url, url: s.url, npub: s.npub }] : [];
+  }
+  const words = q.toLowerCase().split(/\s+/);
+  const hay = (s: Service) => `${s.display_name} ${s.registry_description ?? ""} ${s.url}`.toLowerCase();
+  return (await operatorsInRegistry()).filter((s) => words.every((w) => hay(s).includes(w))).slice(0, limit);
 }
 
 /** What one read at one Operator came back with. */

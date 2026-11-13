@@ -1,0 +1,1 @@
+- Setup finds Operators instead of listing them all: search by name or words, or paste an Operator's npub, and add the ones your people use. At each, **Prove me here** proves your npub once by DM, so the console can read and fund your people there without your key in the browser (tollbooth-web 3.6.0). People sends you to Setup for an Operator you have not proven yourself at.

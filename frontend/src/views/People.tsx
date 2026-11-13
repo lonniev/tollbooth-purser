@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Copy, UserPlus, X } from "lucide-react";
 import { operatorClient, type CheckBalanceResult, type PeerGrantResult } from "@tollbooth-dpyc/web";
 import { useAppShell } from "@tollbooth-dpyc/web/react";
@@ -75,12 +76,15 @@ export default function People() {
 function MemberCard({ member, owner, onRemoved }: { member: Member; owner: string; onRemoved: () => void }) {
   const { detail } = useOrg();
   const [balances, setBalances] = useState<Record<string, Reading<CheckBalanceResult> | undefined>>({});
+  const [proven, setProven] = useState<Record<string, boolean>>({});
   const [open, setOpen] = useState("");
   const read = useCallback(async () => {
     if (!detail) return;
+    const proofs = await Promise.all(detail.operators.map(async (o) => [o.url, await operatorClient(o.url).proves(owner).catch(() => false)] as const));
+    setProven(Object.fromEntries(proofs));
     const pairs = await Promise.all(detail.operators.map(async (o) => [o.url, await balanceAt(o.url, member.staff_npub)] as const));
     setBalances(Object.fromEntries(pairs));
-  }, [detail, member.staff_npub]);
+  }, [detail, member.staff_npub, owner]);
 
   useEffect(() => {
     void read();
@@ -115,6 +119,8 @@ function MemberCard({ member, owner, onRemoved }: { member: Member; owner: strin
                 <span>{operatorName(detail, o.url)}</span>
                 {b === undefined ? (
                   <span className="muted">…</span>
+                ) : proven[o.url] === false ? (
+                  <Link to="/setup" className="chip">Prove yourself here first</Link>
                 ) : b.ok ? (
                   <span className="flex items-center gap-2">
                     <span className="num">{sats(b.value.balance_api_sats ?? 0)} <span className="muted text-xs">api_sats</span></span>
