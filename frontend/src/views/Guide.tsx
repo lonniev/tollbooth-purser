@@ -15,7 +15,7 @@ import { inviteText } from "../lib/invite";
 
 const STEPS = [
   { icon: <Building2 size={18} aria-hidden />, title: "Create your Organization", says: <>Sign in with your <Term of="npub" />. Your npub owns the <Term of="organization" label="Organization" />.</> },
-  { icon: <KeyRound size={18} aria-hidden />, title: "Choose your Operators", says: <>Find each <Term of="operator" label="Operator" /> your people use, and <Term of="prove" label="prove yourself" /> there once by DM.</> },
+  { icon: <KeyRound size={18} aria-hidden />, title: "Choose your Operators", says: <>Find each <Term of="operator" label="Operator" /> your people use, and <Term of="prove" label="authenticate" /> there once by DM.</> },
   { icon: <Handshake size={18} aria-hidden />, title: "Sponsor your people", says: <>Add each person by npub. They ask you to be their <Term of="sponsor" label="sponsor" />, or you offer, and the other approves a <Term of="courier" label="DM" />.</> },
   { icon: <FolderKanban size={18} aria-hidden />, title: "Set your budgets", says: <>Make a <Term of="project" label="Project" /> for each budget, and put your people on it.</> },
   { icon: <Zap size={18} aria-hidden />, title: "Top them up", says: <>Pay a person's <Term of="topup" label="top-up" /> from your own Lightning wallet. Purser assigns it to their Project.</> },
@@ -27,7 +27,7 @@ const TOURS = [
   { page: "people", href: "/people", label: "People" },
   { page: "projects", href: "/projects", label: "Projects" },
   { page: "ledger", href: "/ledger", label: "Ledger" },
-  { page: "setup", href: "/setup", label: "Setup" },
+  { page: "organizations", href: "/organizations", label: "Organizations" },
   { page: "account", href: "/profile", label: "Profile" },
 ];
 

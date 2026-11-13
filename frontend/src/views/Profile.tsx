@@ -63,10 +63,10 @@ function ProvenAt() {
   const { detail } = useOrg();
   return (
     <section className="card panel" {...tourTarget("account.proven")}>
-      <h2 className="panel-title mb-1">Where you are proven</h2>
-      <p className="muted mb-2 text-sm">This page acts as you at each Operator you <Term of="prove" label="proved yourself" /> at, so it can read and pay for your people there.</p>
+      <h2 className="panel-title mb-1">Where you are authenticated</h2>
+      <p className="muted mb-2 text-sm">This page acts as you at each Operator where you <Term of="prove" label="authenticated" />, so it can read and pay for your people there.</p>
       {!detail?.operators.length ? (
-        <p className="muted text-sm">No Operators yet. <Link to="/setup" className="underline">Add them in Setup</Link>.</p>
+        <p className="muted text-sm">No Operators yet. <Link to="/organizations" className="underline">Add them in Organizations</Link>.</p>
       ) : (
         <div className="grid gap-2">
           {detail.operators.map((o) => (

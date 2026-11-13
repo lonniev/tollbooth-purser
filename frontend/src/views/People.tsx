@@ -337,7 +337,7 @@ function MemberDetail({ member, last, onChanged, onRemoved }: {
             <input className="field" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Find an Operator" aria-label="Find an Operator" />
           )}
         </div>
-        {detail.operators.length === 0 && <p className="muted text-sm">Add the Operators your people use in <Link to="/setup" className="underline">Setup</Link>.</p>}
+        {detail.operators.length === 0 && <p className="muted text-sm">Add the Operators your people use in <Link to="/organizations" className="underline">Organizations</Link>.</p>}
         <div className="acct-list">
           {operators.map((o) => {
             const b = balances[o.url];

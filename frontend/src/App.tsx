@@ -1,8 +1,9 @@
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { BarChart3, BookOpen, FolderKanban, ReceiptText, Settings, Users, Wallet as WalletIcon } from "lucide-react";
+import { BarChart3, BookOpen, Building2, FolderKanban, ReceiptText, Users, Wallet as WalletIcon } from "lucide-react";
 import { AppShell, SiteNav, TourProvider, Wallet, matchesPath, useAppShell, useTour } from "@tollbooth-dpyc/web/react";
 import Waiting from "./components/Waiting";
 import { decorateTile } from "./lib/tiles";
+import { orgHref } from "./lib/links";
 import type { ReactNode } from "react";
 import { OrgProvider, useOrg } from "./lib/org";
 import { TOURS } from "./lib/tours";
@@ -12,16 +13,16 @@ import Overview from "./views/Overview";
 import Profile from "./views/Profile";
 import People from "./views/People";
 import Projects from "./views/Projects";
-import Setup from "./views/Setup";
+import Organizations from "./views/Organizations";
 
 const WELCOME = "Sponsor your people's use of Tollbooth DPYC Operators, and see where the sats go.";
 
 const PAGES = [
   { href: "/overview", label: "Overview", icon: <BarChart3 size={18} aria-hidden /> },
   { href: "/people", label: "People", icon: <Users size={18} aria-hidden /> },
+  { href: "/organizations", label: "Organizations", icon: <Building2 size={18} aria-hidden /> },
   { href: "/projects", label: "Projects", icon: <FolderKanban size={18} aria-hidden /> },
   { href: "/ledger", label: "Ledger", icon: <ReceiptText size={18} aria-hidden /> },
-  { href: "/setup", label: "Setup", icon: <Settings size={18} aria-hidden /> },
   { href: "/wallet", label: "Wallet", icon: <WalletIcon size={18} aria-hidden /> },
   { href: "/guide", label: "Guide", icon: <BookOpen size={18} aria-hidden /> },
 ];
@@ -132,7 +133,7 @@ function OrgGate({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   if (loading && !detail) return <div className="page"><div className="card panel"><Waiting heading="Opening your Organization…" /></div></div>;
   if (problem && !detail) return <div className="page error">{problem}</div>;
-  if (!detail && !pathname.startsWith("/setup")) return <Navigate to="/setup" replace />;
+  if (!detail && !pathname.startsWith("/organizations")) return <Navigate to="/organizations" replace />;
   return (
     <div className="page grid gap-3">
       {detail && <OrgHead />}
@@ -141,23 +142,20 @@ function OrgGate({ children }: { children: ReactNode }) {
   );
 }
 
-/** The Organization these pages show, right-aligned: switch to another, or open its settings. */
+/** The Organization these pages show, top left: switch to another, or open it. */
 function OrgHead() {
   const { orgs, detail, choose } = useOrg();
   if (!detail) return null;
-  const name = detail.organization.name;
+  const { org_id, name } = detail.organization;
   return (
     <div className="org-head">
       {orgs.length > 1 ? (
-        <select className="org-pick" value={detail.organization.org_id} onChange={(e) => choose(e.target.value)} aria-label="Organization">
+        <select className="org-pick" value={org_id} onChange={(e) => choose(e.target.value)} aria-label="Organization">
           {orgs.map((o) => <option key={o.org_id} value={o.org_id}>{o.name}</option>)}
         </select>
       ) : (
-        <h1 className="text-xl font-semibold">{name}</h1>
+        <h1 className="text-xl font-semibold"><Link to={orgHref(org_id)} className="ent">{name}</Link></h1>
       )}
-      <Link to="/setup" className="icon-btn" aria-label={`${name} settings`} title="Organization settings">
-        <Settings size={18} aria-hidden />
-      </Link>
     </div>
   );
 }
@@ -188,7 +186,7 @@ function Site() {
             <Route path="people" element={<Console><People /></Console>} />
             <Route path="projects" element={<Console><Projects /></Console>} />
             <Route path="ledger" element={<Console><Ledger /></Console>} />
-            <Route path="setup" element={<Console><Setup /></Console>} />
+            <Route path="organizations" element={<Console><Organizations /></Console>} />
             <Route path="wallet" element={session.signedIn ? <WalletPage /> : <Navigate to="/signin" replace />} />
             <Route path="guide" element={<Guide />} />
             <Route path="profile" element={session.signedIn ? <Profile /> : <Navigate to="/signin" replace />} />

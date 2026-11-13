@@ -8,8 +8,8 @@ import { Link } from "react-router-dom";
 import { memberName, operatorName, useOrg } from "../lib/org";
 import { operatorHref, personHref, projectHref } from "../lib/links";
 
-export function EntityLink({ to, children }: { to: string; children: ReactNode }) {
-  return <Link to={to} className="ent">{children}</Link>;
+export function EntityLink({ to, children, onClick }: { to: string; children: ReactNode; onClick?: () => void }) {
+  return <Link to={to} className="ent" onClick={onClick}>{children}</Link>;
 }
 
 export function ProjectLink({ id }: { id: string }) {
@@ -24,5 +24,5 @@ export function PersonLink({ npub }: { npub: string }) {
 
 export function OperatorLink({ url }: { url: string }) {
   const { detail } = useOrg();
-  return <EntityLink to={operatorHref(url)}>{detail ? operatorName(detail, url) : url}</EntityLink>;
+  return <EntityLink to={operatorHref(url, detail?.organization.org_id)}>{detail ? operatorName(detail, url) : url}</EntityLink>;
 }

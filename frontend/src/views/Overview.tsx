@@ -82,7 +82,7 @@ export default function Overview() {
         <p className="text-sm">Add the people you sponsor and the Operators they use, and their numbers show here.</p>
         <div className="mt-3 flex gap-2">
           <Link to="/people" className="chip chip-accent">People</Link>
-          <Link to="/setup" className="chip">Operators</Link>
+          <Link to="/organizations" className="chip">Operators</Link>
         </div>
       </div>
     );
@@ -134,7 +134,7 @@ export default function Overview() {
         <Panel title="Top people" tour="overview.people" action={<Link to="/people" className="text-xs underline">People ›</Link>}>
           <RankedList rows={o.topStaff} name={(k) => <PersonLink npub={k} />} unit="api_sats" empty="No use in this period." />
         </Panel>
-        <Panel title="Top Operators" action={<Link to="/setup" className="text-xs underline">Operators ›</Link>}>
+        <Panel title="Top Operators" action={<Link to="/organizations" className="text-xs underline">Operators ›</Link>}>
           <RankedList rows={o.topOperators} name={(k) => <OperatorLink url={k} />} unit="api_sats" empty="No use in this period." />
         </Panel>
       </div>
@@ -177,7 +177,7 @@ export default function Overview() {
               {missing.length.toLocaleString("en-US")} {missing.length === 1 ? "account" : "accounts"} did not answer
             </summary>
             <p className="muted my-2 text-sm">
-              Either you have yet to prove yourself at that Operator (Setup), or the person has yet to ask you to sponsor them there (People).
+              Either you have yet to authenticate at that Operator (Organizations), or the person has yet to ask you to sponsor them there (People).
             </p>
             <ul className="max-h-64 overflow-y-auto text-sm">
               {missing.map((m) => (
