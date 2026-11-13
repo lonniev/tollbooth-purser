@@ -11,6 +11,7 @@ import { tourTarget, useTour } from "@tollbooth-dpyc/web/react";
 import { sats } from "../components/Charts";
 import { HelpButton, Paging, SearchButton, Toolbar } from "../components/Controls";
 import Term from "../components/Term";
+import Waiting from "../components/Waiting";
 import { OperatorLink, PersonLink, ProjectLink } from "../components/EntityLink";
 import { ledgerCsv, unbooked, type Funding, type Unbooked } from "../lib/analytics";
 import { memberName, operatorName, useOrg } from "../lib/org";
@@ -99,7 +100,7 @@ export default function Ledger() {
       </Toolbar>
       {problem && <p className="error">{problem}</p>}
       {rows === null ? (
-        <p className="muted text-sm">Loading…</p>
+        <Waiting heading="Reading the books at your Operators…" />
       ) : rows.length === 0 ? (
         <p className="muted text-sm">No top-ups purchased yet. A top-up from People lands here.</p>
       ) : shown.length === 0 ? (
