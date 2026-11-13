@@ -142,7 +142,7 @@ export default function Overview() {
       {missing.length > 0 && (
         <Panel title="Not read">
           <p className="muted mb-2 text-sm">
-            These accounts did not answer. Most often the person has not yet asked you to sponsor them at that Operator.
+            These accounts did not answer. Either you have not proven yourself at that Operator yet (Setup), or the person has not yet asked you to sponsor them there (People).
           </p>
           <ul className="text-sm">
             {missing.map((m) => (
