@@ -133,8 +133,29 @@ function OrgGate({ children }: { children: ReactNode }) {
   if (!detail && !pathname.startsWith("/setup")) return <Navigate to="/setup" replace />;
   return (
     <div className="page grid gap-3">
-      {detail && <h1 className="text-xl font-semibold">{detail.organization.name}</h1>}
+      {detail && <OrgHead />}
       {children}
+    </div>
+  );
+}
+
+/** The Organization these pages show, right-aligned: switch to another, or open its settings. */
+function OrgHead() {
+  const { orgs, detail, choose } = useOrg();
+  if (!detail) return null;
+  const name = detail.organization.name;
+  return (
+    <div className="org-head">
+      {orgs.length > 1 ? (
+        <select className="org-pick" value={detail.organization.org_id} onChange={(e) => choose(e.target.value)} aria-label="Organization">
+          {orgs.map((o) => <option key={o.org_id} value={o.org_id}>{o.name}</option>)}
+        </select>
+      ) : (
+        <h1 className="text-xl font-semibold">{name}</h1>
+      )}
+      <Link to="/setup" className="icon-btn" aria-label={`${name} settings`} title="Organization settings">
+        <Settings size={18} aria-hidden />
+      </Link>
     </div>
   );
 }

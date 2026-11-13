@@ -5,6 +5,8 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { Info } from "lucide-react";
 import { define } from "../lib/glossary";
 
 export default function Term({ of, label }: { of: string; label?: string }) {
@@ -34,8 +36,16 @@ export default function Term({ of, label }: { of: string; label?: string }) {
         onPointerUp={() => { lifted.current = true; setOpen((o) => !o); }}
         onClick={() => { if (!lifted.current) setOpen((o) => !o); lifted.current = false; }}>
         {label ?? entry.term}
+        <Info size={13} aria-hidden className="term-i" />
       </button>
-      {open && <span role="note" className="site-menu left-0 block w-72 p-2 text-left text-sm font-normal">{entry.said}</span>}
+      {open && (
+        <span role="note" className="site-menu left-0 block w-72 p-3 text-left text-sm font-normal">
+          {entry.said}
+          <Link to={`/guide?term=${encodeURIComponent(entry.key)}`} className="mt-2 block text-xs underline" onClick={() => setOpen(false)}>
+            All the terms ›
+          </Link>
+        </span>
+      )}
     </span>
   );
 }

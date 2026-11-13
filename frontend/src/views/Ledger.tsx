@@ -13,7 +13,8 @@ import { HelpButton, Paging, SearchButton, Toolbar } from "../components/Control
 import Term from "../components/Term";
 import { ledgerCsv, unbooked, type Funding, type Unbooked } from "../lib/analytics";
 import { memberName, operatorName, useOrg } from "../lib/org";
-import { fundingLedger, recordFunding, statements } from "../lib/purser";
+import { forgetIntent, intentFor } from "../lib/intents";
+import { fundingLedger, recordFunding, statements, type OrgDetail } from "../lib/purser";
 
 const PAGE = 50;
 
@@ -36,8 +37,16 @@ export default function Ledger() {
         fundingLedger(detail.organization.org_id),
         statements(detail.members, detail.operators, LOOKBACK_DAYS),
       ]);
-      setRows(f);
-      setLoose(unbooked(s.read, f));
+      const loose = unbooked(s.read, f);
+      const booked = await bookIntended(detail, loose);
+      if (booked.length) {
+        const again = await fundingLedger(detail.organization.org_id);
+        setRows(again);
+        setLoose(loose.filter((u) => !booked.includes(u)));
+      } else {
+        setRows(f);
+        setLoose(loose);
+      }
     } catch (e) {
       setProblem((e as Error).message);
     }
@@ -118,6 +127,22 @@ export default function Ledger() {
     </section>
     </div>
   );
+}
+
+/** Book each settled top-up whose Project this device remembers; the rest wait for the owner. */
+async function bookIntended(detail: OrgDetail, loose: Unbooked[]): Promise<Unbooked[]> {
+  const booked: Unbooked[] = [];
+  for (const u of loose) {
+    const project = intentFor(u.operator, u.invoice_id);
+    if (!project || !detail.projects.some((p) => p.project_id === project)) continue;
+    await recordFunding(detail.organization.org_id, {
+      project_id: project, staff_npub: u.staff, operator_url: u.operator,
+      invoice_id: u.invoice_id, sats: u.sats, paid_at: u.paid_at || undefined,
+    });
+    forgetIntent(u.operator, u.invoice_id);
+    booked.push(u);
+  }
+  return booked;
 }
 
 function BookRow({ item, onBooked }: { item: Unbooked; onBooked: () => void }) {

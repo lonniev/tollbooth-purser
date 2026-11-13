@@ -3,14 +3,15 @@
  * anyone: a visitor reads it before signing in.
  */
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Building2, FolderKanban, Handshake, KeyRound, ReceiptText, Zap } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Copy, Building2, FolderKanban, Handshake, KeyRound, ReceiptText, Zap } from "lucide-react";
 import { useAppShell, useTourReplay } from "@tollbooth-dpyc/web/react";
 import { SearchButton, Toolbar } from "../components/Controls";
 import Term from "../components/Term";
-import { GROUPS, searchGlossary } from "../lib/glossary";
+import { GROUPS, define, searchGlossary } from "../lib/glossary";
 import TutorialSwitch from "../components/TutorialSwitch";
+import { inviteText } from "../lib/invite";
 
 const STEPS = [
   { icon: <Building2 size={18} aria-hidden />, title: "Create your Organization", says: <>Sign in with your <Term of="npub" />. Your npub owns the <Term of="organization" label="Organization" />.</> },
@@ -34,8 +35,18 @@ export default function Guide() {
   const { session } = useAppShell();
   const replay = useTourReplay();
   const go = useNavigate();
-  const [query, setQuery] = useState("");
+  const [params] = useSearchParams();
+  const asked = define(params.get("term") ?? "");
+  const [query, setQuery] = useState(asked?.term ?? "");
   const hits = searchGlossary(query);
+  const terms = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (asked) terms.current?.scrollIntoView({ block: "start" });
+  }, [asked]);
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (hash) document.getElementById(hash.slice(1))?.scrollIntoView({ block: "start" });
+  }, [hash]);
 
   return (
     <div className="page grid gap-3">
@@ -55,6 +66,25 @@ export default function Guide() {
         </ol>
       </section>
 
+      <section className="card panel" id="invite">
+        <Toolbar title="Invite your people">
+          {session.signedIn && (
+            <button type="button" className="chip" onClick={() => void navigator.clipboard?.writeText(inviteText(session.npub ?? ""))}>
+              <Copy size={14} aria-hidden /> Copy
+            </button>
+          )}
+        </Toolbar>
+        <ol className="grid list-decimal gap-1 pl-5 text-sm">
+          <li>Send each person the invitation: tap ✉ on People, or Copy here.</li>
+          <li>In their account at each <Term of="operator" label="Operator" /> they use, they ask your npub to be their <Term of="sponsor" label="sponsor" />.</li>
+          <li>Your Nostr app asks you to approve, and their balance there shows on People.</li>
+        </ol>
+        <p className="muted mt-2 text-sm">You may offer instead: open their row on People and tap Offer to sponsor at an Operator.</p>
+        {session.signedIn && (
+          <p className="mt-2 rounded-lg p-2 text-sm" style={{ background: "var(--tb-surface-2)" }}>{inviteText(session.npub ?? "")}</p>
+        )}
+      </section>
+
       {session.signedIn && (
         <section className="card panel">
           <Toolbar title="Show me on the page" />
@@ -68,7 +98,7 @@ export default function Guide() {
         </section>
       )}
 
-      <section className="card panel">
+      <section className="card panel" id="terms" ref={terms}>
         <Toolbar title="Terms">
           <SearchButton value={query} onChange={setQuery} label="Search the words" />
         </Toolbar>

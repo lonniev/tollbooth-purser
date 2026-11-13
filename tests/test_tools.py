@@ -97,12 +97,24 @@ async def test_a_caller_without_proof_gets_nothing(billing, books):
     ("record_funding", {"project_id": "p", "staff_npub": STAFF, "operator_url": GE,
                         "invoice_id": "i", "sats": -5}, "sats"),
     ("save_project", {"name": "P", "budget_sats": 10, "period": "fortnight"}, "period"),
+    ("save_project", {"name": "P", "budget_sats": 10, "purpose": "x" * 281}, "purpose"),
 ])
 async def test_adversarial_arguments_are_refused(billing, books, tool, args, why):
     org = (await call("save_organization", name="Acme", npub=OWNER))["org_id"]
     r = await call(tool, org_id=org, npub=OWNER, **args)
     assert why in json.dumps(r).lower() or why in json.dumps(r)
     assert r.get("ok") is not True
+
+
+async def test_a_project_keeps_its_purpose(billing, books):
+    org = (await call("save_organization", name="Acme", npub=OWNER))["org_id"]
+    project = (await call("save_project", org_id=org, name="Fall crew", budget_sats=10,
+                          purpose="  Clears the fall grounds\n before frost. ", npub=OWNER))["project_id"]
+    [p] = (await call("get_organization", org_id=org, npub=OWNER))["projects"]
+    assert p["purpose"] == "Clears the fall grounds before frost."
+    await call("save_project", org_id=org, project_id=project, name="Fall crew", budget_sats=20, npub=OWNER)
+    [p] = (await call("get_organization", org_id=org, npub=OWNER))["projects"]
+    assert p["purpose"] == "" and p["budget_sats"] == 20
 
 
 async def test_a_settled_invoice_is_booked_at_its_own_time(billing, books):

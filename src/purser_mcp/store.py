@@ -167,13 +167,14 @@ class PurserStore:
 
     async def save_project(
         self, owner: str, org_id: str, *, name: str, budget_sats: int, period: str, project_id: str = "",
+        purpose: str = "",
     ) -> str:
         await self.owned(owner, org_id)
         current = {p["project_id"]: p for p in await self._projects(org_id)}
         if project_id and project_id not in current:
             raise NotYours(f"No Project {project_id!r} in this Organization.")
         project = current.get(project_id) or {"project_id": new_id(), "staff": []}
-        project |= {"name": name, "budget_sats": budget_sats, "period": period}
+        project |= {"name": name, "budget_sats": budget_sats, "period": period, "purpose": purpose}
         await self._put_project(org_id, project)
         return project["project_id"]
 

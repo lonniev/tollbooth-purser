@@ -20,7 +20,7 @@ export const TOURS: Record<string, Tour> = {
     { target: "page.add", title: "Add a person", says: "Tap + and paste their npub with a label you choose." },
     { target: "page.search", title: "Find a person", says: "Search by label, npub or Project." },
     { target: "people.table", title: "Your people", says: "Tap a row to see their balance at each Operator, offer to sponsor them, or top them up." },
-    { target: "people.invite", title: "The invitation", says: "Send this to your people. It asks them to request your npub as their sponsor at each Operator." },
+    { target: "people.invite", title: "The invitation", says: "Tap the envelope to copy the invitation. Send it to your people, and each asks your npub to sponsor them at each Operator." },
   ] },
   projects: { page: "projects", steps: [
     { target: "page.add", title: "New Project", says: "Tap + to name a budget and its period." },

@@ -5,6 +5,7 @@
  */
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { filterRows, pageRows, type SortDir } from "@tollbooth-dpyc/web";
 import { SortHeader, TableShell, tourTarget, useTour } from "@tollbooth-dpyc/web/react";
@@ -12,14 +13,24 @@ import { BudgetMeter, sats } from "../components/Charts";
 import { AddButton, HelpButton, Paging, SearchButton, Toolbar } from "../components/Controls";
 import PickMany from "../components/PickMany";
 import Term from "../components/Term";
-import { earliestPeriodStart, projectBurn, type Funding } from "../lib/analytics";
+import { earliestPeriodStart, periodStart, projectBurn, type Funding } from "../lib/analytics";
+import { personHref } from "../lib/links";
 import { memberName, useOrg } from "../lib/org";
 import { assignMember, fundingLedger, saveProject, type Project } from "../lib/purser";
 
 const PERIODS: Project["period"][] = ["month", "quarter", "year", "none"];
 const PAGE = 20;
 const SORT = { cell: "", button: "sort-btn", active: "sort-on", arrow: "muted" };
+const SORT_RIGHT = { ...SORT, cell: "text-right" };
+const MAX_PURPOSE = 280;
 const periodLabel = (p: Project["period"]) => (p === "none" ? "in all" : `per ${p}`);
+
+/** When a Project's funded figure starts counting: the start of its current period. */
+function fundedSince(period: Project["period"], today: Date): string {
+  const start = periodStart(period, today);
+  if (!start) return "in all";
+  return `since ${new Date(start * 1000).toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" })}`;
+}
 
 interface Row extends Project {
   funded: number;
@@ -40,7 +51,8 @@ export default function Projects() {
   const [adding, setAdding] = useState(false);
   const [sort, setSort] = useState<{ col: string; dir: SortDir }>({ col: "name", dir: "asc" });
   const [page, setPage] = useState(0);
-  const [open, setOpen] = useState("");
+  const [params] = useSearchParams();
+  const [open, setOpen] = useState(params.get("open") ?? "");
   const [problem, setProblem] = useState("");
   useTour("projects", { ready: Boolean(detail) });
 
@@ -65,12 +77,22 @@ export default function Projects() {
 
   const shown = useMemo(() => {
     const names = (r: Row) => r.staff.map((n) => memberName(detail, n)).join(" ");
-    const found = filterRows(rows, { search: query }, { text: (r) => `${r.name} ${names(r)}` });
+    const found = filterRows(rows, { search: query }, { text: (r) => `${r.name} ${r.purpose ?? ""} ${names(r)}` });
     const cmp = BY[sort.col] ?? BY.name;
     return found.sort((a, b) => (sort.dir === "asc" ? cmp(a, b) : cmp(b, a)) || a.name.localeCompare(b.name));
   }, [rows, query, sort, detail]);
 
   useEffect(() => setPage(0), [query, sort]);
+
+  // A link that names a Project opens it, on whichever page it sits.
+  const asked = params.get("open") ?? "";
+  useEffect(() => {
+    if (!asked) return;
+    setOpen(asked);
+    const at = shown.findIndex((r) => r.project_id === asked);
+    if (at >= 0) setPage(Math.floor(at / PAGE));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asked, rows.length]);
   if (!detail) return null;
   const orgId = detail.organization.org_id;
 
@@ -84,14 +106,14 @@ export default function Projects() {
     }
   }
 
-  const header = (label: string, col: string, initialDir: SortDir = "desc") => (
-    <SortHeader label={label} col={col} activeCol={sort.col} dir={sort.dir} initialDir={initialDir} classNames={SORT}
+  const header = (label: string, col: string, initialDir: SortDir = "desc", right = true) => (
+    <SortHeader label={label} col={col} activeCol={sort.col} dir={sort.dir} initialDir={initialDir} classNames={right ? SORT_RIGHT : SORT}
       onSort={(c, d) => setSort({ col: c, dir: d })} />
   );
 
   return (
     <section className="card panel">
-      <Toolbar title="Projects" count={detail.projects.length}>
+      <Toolbar title={<Term of="project" label="Projects" />} count={detail.projects.length}>
         <SearchButton value={query} onChange={setQuery} label="Find by name or person" />
         <HelpButton page="projects" />
         <AddButton open={adding} onToggle={() => setAdding(!adding)} label="New Project" />
@@ -103,7 +125,7 @@ export default function Projects() {
 
       {detail.projects.length === 0 ? (
         <p className="muted text-sm">
-          No Projects yet. A <Term of="project" label="Project" /> is the budget each top-up is booked to: tap + to make one.
+          No Projects yet. Each top-up is booked to one. Tap + to make one.
         </p>
       ) : shown.length === 0 ? (
         <p className="muted text-sm">No Project matches that.</p>
@@ -112,8 +134,8 @@ export default function Projects() {
           <TableShell classNames={{ root: "overflow-x-auto", table: "ledger rows" }}>
             <thead>
               <tr>
-                {header("Project", "name", "asc")}
-                {header("Funded this period", "funded")}
+                {header("Project", "name", "asc", false)}
+                {header("Funded", "funded")}
                 {header("Budget", "budget")}
                 {header("People", "people")}
               </tr>
@@ -126,18 +148,19 @@ export default function Projects() {
                     <tr className="row-open" aria-expanded={isOpen} onClick={() => setOpen(isOpen ? "" : r.project_id)}>
                       <td>
                         <span className="flex items-center gap-2 font-medium">
-                          {isOpen ? <ChevronDown size={14} aria-hidden /> : <ChevronRight size={14} aria-hidden />}
+                          {isOpen ? <ChevronDown size={16} aria-hidden /> : <ChevronRight size={16} aria-hidden />}
                           {r.name}
                         </span>
+                        {r.purpose && <span className="muted mt-0.5 block pl-6 text-sm">{r.purpose}</span>}
                       </td>
-                      <td className="min-w-40">
-                        <span className="num text-sm">{sats(r.funded)}</span>
+                      <td className="min-w-44 text-right">
+                        <span className="num">{sats(r.funded)}</span> <span className="muted text-sm">{fundedSince(r.period, new Date())}</span>
                         <BudgetMeter funded={r.funded} budget={r.budget_sats} />
                       </td>
-                      <td className="num text-sm">
-                        {r.budget_sats ? sats(r.budget_sats) : "—"} <span className="muted text-xs">{periodLabel(r.period)}</span>
+                      <td className="num text-right">
+                        {r.budget_sats ? sats(r.budget_sats) : "—"} <span className="muted text-sm">{periodLabel(r.period)}</span>
                       </td>
-                      <td className="num text-sm">{r.staff.length}</td>
+                      <td className="num text-right">{r.staff.length}</td>
                     </tr>
                     {isOpen && (
                       <tr className="row-detail">
@@ -145,8 +168,8 @@ export default function Projects() {
                           <div className="grid gap-3 py-1">
                             <ProjectForm project={r} onSave={(p) => act(() => saveProject(orgId, { ...p, project_id: r.project_id }))} />
                             <div className="grid gap-2">
-                              <h3 className="muted text-xs font-medium uppercase">People on it</h3>
-                              <PickMany label="Add a person…" chosen={new Set(r.staff)}
+                              <h3 className="member-title">People on it</h3>
+                              <PickMany label="Add a person…" chosen={new Set(r.staff)} href={personHref}
                                 items={detail.members.map((m) => ({ id: m.staff_npub, label: m.label, also: m.staff_npub }))}
                                 onToggle={(npub, on) => void act(() => assignMember(orgId, r.project_id, npub, on))} />
                               {!detail.members.length && <p className="muted text-sm">Add people first, on People.</p>}
@@ -169,22 +192,24 @@ export default function Projects() {
 
 function ProjectForm({ project, onSave }: {
   project?: Project;
-  onSave: (p: { name: string; budget_sats: number; period: Project["period"] }) => Promise<void>;
+  onSave: (p: { name: string; budget_sats: number; period: Project["period"]; purpose: string }) => Promise<void>;
 }) {
   const [name, setName] = useState(project?.name ?? "");
   const [budget, setBudget] = useState(project ? String(project.budget_sats) : "");
   const [period, setPeriod] = useState<Project["period"]>(project?.period ?? "month");
+  const [purpose, setPurpose] = useState(project?.purpose ?? "");
   const [busy, setBusy] = useState(false);
   const amount = Number.parseInt(budget, 10);
   const valid = Boolean(name.trim()) && Number.isFinite(amount) && amount >= 0;
-  const changed = !project || name !== project.name || amount !== project.budget_sats || period !== project.period;
+  const changed = !project || name !== project.name || amount !== project.budget_sats || period !== project.period
+    || purpose.trim() !== (project.purpose ?? "");
 
   return (
     <form className="add-form" onSubmit={(e) => {
       e.preventDefault();
       if (!valid || !changed) return;
       setBusy(true);
-      void onSave({ name: name.trim(), budget_sats: amount, period }).finally(() => setBusy(false));
+      void onSave({ name: name.trim(), budget_sats: amount, period, purpose: purpose.trim() }).finally(() => setBusy(false));
     }}>
       <input className="field flex-1" placeholder="Name, e.g. Fall Grounds Crew" value={name} onChange={(e) => setName(e.target.value)} aria-label="Project name" autoFocus={!project} />
       <input className="field w-32" inputMode="numeric" placeholder="Budget, sats" value={budget}
@@ -192,7 +217,9 @@ function ProjectForm({ project, onSave }: {
       <select className="field" value={period} onChange={(e) => setPeriod(e.target.value as Project["period"])} aria-label="Period">
         {PERIODS.map((p) => <option key={p} value={p}>{periodLabel(p)}</option>)}
       </select>
-      <button type="submit" className="chip chip-accent" disabled={busy || !valid || !changed}>
+      <textarea className="field w-full" rows={2} maxLength={MAX_PURPOSE} value={purpose} onChange={(e) => setPurpose(e.target.value)}
+        placeholder="Why it exists, e.g. Clears the fall grounds before frost" aria-label="Why this Project exists" />
+      <button type="submit" className="chip chip-accent ml-auto" disabled={busy || !valid || !changed}>
         {project ? "Save" : <><Plus size={14} aria-hidden /> Create</>}
       </button>
     </form>
