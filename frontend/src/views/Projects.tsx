@@ -125,7 +125,7 @@ export default function Projects() {
 
       {detail.projects.length === 0 ? (
         <p className="muted text-sm">
-          No Projects yet. Each top-up is booked to one. Tap + to make one.
+          No Projects yet. Each top-up is assigned to one. Tap + to make one.
         </p>
       ) : shown.length === 0 ? (
         <p className="muted text-sm">No Project matches that.</p>

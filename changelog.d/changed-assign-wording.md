@@ -1,0 +1,1 @@
+- Ledger says "Assign to Project" and "Top-ups Purchased" in place of "To book" and "Fundings"; the button is Assign.

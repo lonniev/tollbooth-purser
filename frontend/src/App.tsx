@@ -106,7 +106,7 @@ function Home() {
       <p className="muted">
         Your Organization pays for the people it sponsors at each Tollbooth DPYC™ Operator they use.
         Each person asks your npub to sponsor them there, or you offer, and the other approves.
-        You see their balances, pay their top-ups from your own wallet, book each one to a Project, and watch where the sats go.
+        You see their balances, pay their top-ups from your own wallet, assign each one to a Project, and watch where the sats go.
         You never spend their balance, and they keep their own keys.
       </p>
       <div className="flex flex-wrap gap-2">
