@@ -14,6 +14,7 @@ import { operatorClient } from "@tollbooth-dpyc/web";
 import { tourTarget, useTour } from "@tollbooth-dpyc/web/react";
 import { HelpButton } from "../components/Controls";
 import { OperatorLink, PersonLink } from "../components/EntityLink";
+import { operatorHref, personHref, projectHref } from "../lib/links";
 import { bareTool, foldSeries, overview, projectBurn, splitToolKey, type Funding, type Statement } from "../lib/analytics";
 import { memberName, operatorName, useOrg } from "../lib/org";
 import { fundingLedger, statements } from "../lib/purser";
@@ -142,7 +143,7 @@ export default function Overview() {
 
       <div className="grid-2">
         <Panel title="Calls by tool">
-          <HBars rows={o.callsByTool} unit="calls" empty="No calls in this period."
+          <HBars rows={o.callsByTool} unit="calls" empty="No calls in this period." href={(k) => operatorHref(splitToolKey(k).operator)}
             name={(k) => {
               const { operator, tool } = splitToolKey(k);
               const bare = bareTool(tool, prefixes[operator]);
@@ -160,10 +161,10 @@ export default function Overview() {
           />
         </Panel>
         <Panel title="Expired (demurrage)">
-          <HBars rows={o.expiredByStaff} name={(k) => memberName(detail, k)} unit="api_sats" empty="Nothing has expired." />
+          <HBars rows={o.expiredByStaff} href={personHref} name={(k) => memberName(detail, k)} unit="api_sats" empty="Nothing has expired." />
         </Panel>
         <Panel title="Project budgets, this period" tour="overview.budgets" action={<Link to="/projects" className="text-xs underline">{detail.projects.length > BUDGETS_SHOWN ? `All ${detail.projects.length} ›` : "Projects ›"}</Link>}>
-          <BudgetBars rows={burn} />
+          <BudgetBars rows={burn} href={projectHref} />
         </Panel>
       </div>
 

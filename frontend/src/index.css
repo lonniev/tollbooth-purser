@@ -274,3 +274,5 @@ table.ledger th.text-right, table.ledger td.text-right { text-align: right; }
 .ent:hover, .ent:focus-visible { color: var(--tb-accent); text-decoration-color: currentColor; }
 /* The Operator a link opened, on Setup. */
 .op-line.op-on { outline: 2px solid var(--tb-accent); outline-offset: 4px; border-radius: 0.5rem; }
+.ent-svg { fill: var(--chart-muted); text-decoration: underline; cursor: pointer; }
+.ent-svg:hover, .ent-svg:focus-visible { fill: var(--tb-accent); outline: none; }

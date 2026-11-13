@@ -1,0 +1,1 @@
+- Overview links every entity it names: Project budgets open their Project, Calls by tool opens the tool's Operator, and Expired opens the person; their labels and bars both link.

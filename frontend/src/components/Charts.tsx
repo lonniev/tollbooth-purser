@@ -6,6 +6,7 @@
  */
 
 import type { ReactNode } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
@@ -164,21 +165,34 @@ export function DailyLines({ data, series, unit, height = 200 }: {
 }
 
 /** Ranked horizontal bars in one hue: magnitude, not identity. */
-export function HBars({ rows, name, unit, empty }: { rows: Ranked[]; name: (key: string) => string; unit: string; empty: string }) {
+export function HBars({ rows, name, unit, empty, href }: {
+  rows: Ranked[]; name: (key: string) => string; unit: string; empty: string;
+  /** Where each bar's entity opens; its label and bar then link there. */
+  href?: (key: string) => string;
+}) {
+  const navigate = useNavigate();
   if (!rows.length) return <p className="muted text-sm">{empty}</p>;
   const top = rows.slice(0, 8).map((r) => ({ ...r, label: name(r.key) }));
+  const go = (i: number) => href && top[i] && navigate(href(top[i].key));
+  const cut = (v: string) => (v.length > 26 ? `${v.slice(0, 25)}…` : v);
   return (
     <div style={{ width: "100%", height: Math.max(80, top.length * 28 + 16) }}>
       <ResponsiveContainer>
         <BarChart data={top} layout="vertical" margin={{ top: 0, right: 8, bottom: 0, left: 0 }}>
           <XAxis type="number" hide />
-          <YAxis type="category" dataKey="label" width={168} {...axis} axisLine={false}
-            tickFormatter={(v: string) => (v.length > 26 ? `${v.slice(0, 25)}…` : v)} />
+          <YAxis type="category" dataKey="label" width={168} {...axis} axisLine={false} tickFormatter={cut}
+            tick={href ? ({ x, y, payload, index }: { x?: number | string; y?: number | string; payload?: { value?: unknown }; index?: number }) => (
+              <text x={x} y={y} dy={4} textAnchor="end" className="ent-svg" fontSize={11} role="link" tabIndex={0}
+                onClick={() => go(index ?? -1)} onKeyDown={(e) => e.key === "Enter" && go(index ?? -1)}>
+                {cut(String(payload?.value ?? ""))}
+              </text>
+            ) : axis.tick} />
           <Tooltip cursor={{ fill: "var(--tb-surface-2)" }}
             content={({ active, payload }) => active && payload?.length ? (
               <div className="viz-tooltip num">{payload[0].payload.label}: {sats(payload[0].value as number)} {unit}</div>
             ) : null} />
-          <Bar dataKey="value" fill="var(--series-1)" radius={[0, 4, 4, 0]} barSize={14} isAnimationActive={false} />
+          <Bar dataKey="value" fill="var(--series-1)" radius={[0, 4, 4, 0]} barSize={14} isAnimationActive={false}
+            cursor={href ? "pointer" : undefined} onClick={href ? (_: unknown, i: number) => go(i) : undefined} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -197,16 +211,16 @@ export function BudgetMeter({ funded, budget }: { funded: number; budget: number
   );
 }
 
-export function BudgetBars({ rows }: { rows: { key: string; funded: number; budget: number }[] }) {
+export function BudgetBars({ rows, href }: { rows: { id: string; key: string; funded: number; budget: number }[]; href?: (id: string) => string }) {
   if (!rows.length) return <p className="muted text-sm">No Projects yet.</p>;
   return (
     <div className="grid gap-3">
       {rows.map((r) => {
         const over = r.budget > 0 && r.funded > r.budget;
         return (
-          <div key={r.key} title={`${r.key}: ${sats(r.funded)} of ${sats(r.budget)} sats`}>
+          <div key={r.id} title={`${r.key}: ${sats(r.funded)} of ${sats(r.budget)} sats`}>
             <div className="flex justify-between text-sm">
-              <span className="truncate">{r.key}</span>
+              <span className="truncate">{href ? <Link to={href(r.id)} className="ent">{r.key}</Link> : r.key}</span>
               <span className="num">{sats(r.funded)} <span className="muted">/ {r.budget ? sats(r.budget) : "no budget"}</span></span>
             </div>
             <div className="mt-1"><BudgetMeter funded={r.funded} budget={r.budget} /></div>
