@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from "react";
 import { operatorClient, type CheckPaymentResult, type PurchaseCreditsResult } from "@tollbooth-dpyc/web";
 import type { Project } from "../lib/purser";
+import { forgetIntent, rememberIntent } from "../lib/intents";
 import { recordFunding } from "../lib/purser";
 import { sats } from "./Charts";
 
@@ -39,6 +40,7 @@ export default function TopUpAt({ orgId, operator, staff, projects, onDone }: {
     try {
       const r = await op.callTool<PurchaseCreditsResult>("purchase_credits", { npub: staff, amount_sats: amount }, { bestEffort: true });
       if (!r.success || !r.invoice_id) throw new Error(r.error ?? "The Operator made no invoice.");
+      rememberIntent(operator, r.invoice_id, project);
       setPhase({ kind: "awaiting", invoice: { ...r, invoice_id: r.invoice_id }, checks: 0 });
     } catch (e) {
       setProblem((e as Error).message);
@@ -58,6 +60,7 @@ export default function TopUpAt({ orgId, operator, staff, projects, onDone }: {
             project_id: project, staff_npub: staff, operator_url: operator,
             invoice_id: now.invoice.invoice_id, sats: now.invoice.amount_sats ?? amount,
           });
+          forgetIntent(operator, now.invoice.invoice_id);
           setPhase({ kind: "settled", credited: r.credits_granted ?? 0 });
           onDone();
         } else if (r.status === "Expired" || r.status === "Invalid") {

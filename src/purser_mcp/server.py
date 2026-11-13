@@ -187,6 +187,17 @@ PERIODS = ("month", "quarter", "year", "none")
 MAX_FUNDING_SATS = 10_000_000
 
 
+MAX_PURPOSE = 280
+
+
+def _purpose(value: str) -> str:
+    """Why a Project exists: optional, one paragraph."""
+    cleaned = " ".join(str(value).split())
+    if len(cleaned) > MAX_PURPOSE:
+        raise ValueError(f"purpose is at most {MAX_PURPOSE} characters.")
+    return cleaned
+
+
 def _text(value: str, what: str) -> str:
     cleaned = " ".join(str(value).split())
     if not cleaned:
@@ -341,7 +352,7 @@ async def remove_member(org_id: str, staff_npub: str, npub: PatronNpub = "") -> 
 @runtime.paid_tool(SAVE_PROJECT_UUID)
 async def save_project(
     org_id: str, name: str, budget_sats: int, period: str = "month",
-    project_id: str = "", npub: PatronNpub = "",
+    project_id: str = "", purpose: str = "", npub: PatronNpub = "",
 ) -> dict[str, Any]:
     """Create a Project with a budget, or change one.
 
@@ -351,13 +362,14 @@ async def save_project(
         budget_sats: What it may spend each period, in sats.
         period: "month", "quarter", "year", or "none" for one budget in all.
         project_id: A Project to change. Omit to create a new one.
+        purpose: Why the Project exists, in a sentence or two. Optional.
     """
     if period not in PERIODS:
         raise ValueError(f"period is one of {', '.join(PERIODS)}.")
     db = await _owned(npub, org_id)
     saved = await _store_call(db.save_project(
         npub, org_id, name=_text(name, "name"), budget_sats=_sats(budget_sats, "budget_sats"),
-        period=period, project_id=str(project_id),
+        period=period, project_id=str(project_id), purpose=_purpose(purpose),
     ))
     return {"ok": True, "project_id": saved}
 

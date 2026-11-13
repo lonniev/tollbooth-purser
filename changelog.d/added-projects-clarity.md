@@ -1,0 +1,5 @@
+- A Project may say why it exists, in a sentence or two (`save_project` takes an optional `purpose`).
+- Projects: the count stands apart as "(12)", "Projects" carries an (i) definition that links to its place in the Terms, and Funded says since when it counts.
+- A top-up made from People books itself to its Project on the Ledger, even when the wallet took the page away before it settled.
+- The Organization's name sits at the right of every console page, with a switcher when there are several and a link to its settings.
+- Numbers and their headers are right-aligned, and tables read at full size.

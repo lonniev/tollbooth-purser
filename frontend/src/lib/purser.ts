@@ -30,6 +30,8 @@ export interface Project {
   name: string;
   budget_sats: number;
   period: "month" | "quarter" | "year" | "none";
+  /** Why the Project exists, in the owner's words. */
+  purpose?: string;
   staff: string[];
 }
 
@@ -76,6 +78,7 @@ export const removeMember = (orgId: string, staffNpub: string) =>
 export const saveProject = async (orgId: string, p: Omit<Project, "project_id" | "staff"> & { project_id?: string }) =>
   (await purser<Answer & { project_id: string }>("save_project", {
     org_id: orgId, name: p.name, budget_sats: p.budget_sats, period: p.period, project_id: p.project_id ?? "",
+    purpose: p.purpose ?? "",
   })).project_id;
 
 export const assignMember = (orgId: string, projectId: string, staffNpub: string, assigned: boolean) =>

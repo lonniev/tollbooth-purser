@@ -63,7 +63,7 @@ export function Toolbar({ title, count, children }: { title: ReactNode; count?: 
     <div className="toolbar">
       <h2 className="panel-title">
         {title}
-        {count !== undefined && <span className="muted num ml-2 font-normal">{count.toLocaleString("en-US")}</span>}
+        {count !== undefined && <span className="muted num ml-3 font-normal">({count.toLocaleString("en-US")})</span>}
       </h2>
       <div className="toolbar-actions">{children}</div>
     </div>
