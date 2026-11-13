@@ -123,7 +123,7 @@ export function overview(statements: Statement[], fundings: Funding[], n: number
         const per = opDay.get(day.date) ?? new Map<string, number>();
         add(per, operator, day.total_api_sats);
         opDay.set(day.date, per);
-        for (const [tool, use] of Object.entries(day.tools ?? {})) add(byTool, tool, use.calls);
+        for (const [tool, use] of Object.entries(day.tools ?? {})) add(byTool, toolKey(operator, tool), use.calls);
       } else if (prior.has(day.date)) {
         priorUsed += day.total_api_sats;
         priorCalls += day.total_calls;
@@ -172,6 +172,48 @@ export function overview(statements: Statement[], fundings: Funding[], n: number
     fundingVsUse: runningTotals(days.map((date, i) => ({ date, credited: creditedByDay.get(date) ?? 0, used: used[i] }))),
     expiredByStaff: ranked(expired),
   };
+}
+
+/** A tool, named with the Operator it belongs to: tools of two Operators may share a name. */
+export function toolKey(operator: string, tool: string): string {
+  return `${operator}\u0000${tool}`;
+}
+
+/** The parts of a `toolKey`. */
+export function splitToolKey(key: string): { operator: string; tool: string } {
+  const [operator, tool] = key.split("\u0000");
+  return { operator, tool: tool ?? operator };
+}
+
+/** A tool's name without its Operator's prefix: "goodearth_almanac" is "almanac" at GoodEarth. */
+export function bareTool(tool: string, prefix: string | undefined): string {
+  return prefix && tool.startsWith(`${prefix}_`) ? tool.slice(prefix.length + 1) : tool;
+}
+
+/** A settled purchase in a member's statement that Purser has not booked to a Project. */
+export interface Unbooked {
+  staff: string;
+  operator: string;
+  invoice_id: string;
+  sats: number;
+  paid_at: number;
+}
+
+/**
+ * Every settled purchase the members made at the Organization's Operators that
+ * no funding names: paid while the console was closed, or by another route.
+ */
+export function unbooked(statements: Statement[], fundings: Funding[]): Unbooked[] {
+  const booked = new Set(fundings.map((f) => `${f.operator_url}\u0000${f.invoice_id}`));
+  const out: Unbooked[] = [];
+  for (const { staff, operator, statement } of statements) {
+    for (const p of statement.purchase_history ?? []) {
+      if (p.status.toLowerCase() !== "settled" || booked.has(`${operator}\u0000${p.invoice_id}`)) continue;
+      const at = Date.parse(p.settled_at ?? p.created_at ?? "");
+      out.push({ staff, operator, invoice_id: p.invoice_id, sats: p.amount_sats, paid_at: Number.isFinite(at) ? Math.floor(at / 1000) : 0 });
+    }
+  }
+  return out.sort((a, b) => b.paid_at - a.paid_at);
 }
 
 /** Each day's credited and used, summed from the period's first day. */

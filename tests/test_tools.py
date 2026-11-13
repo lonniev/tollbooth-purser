@@ -105,6 +105,21 @@ async def test_adversarial_arguments_are_refused(billing, books, tool, args, why
     assert r.get("ok") is not True
 
 
+async def test_a_settled_invoice_is_booked_at_its_own_time(billing, books):
+    import time
+    org = (await call("save_organization", name="Acme", npub=OWNER))["org_id"]
+    await call("save_member", org_id=org, staff_npub=STAFF, label="Sam", npub=OWNER)
+    project = (await call("save_project", org_id=org, name="P", budget_sats=10, npub=OWNER))["project_id"]
+    when = int(time.time()) - 86_400
+    assert (await call("record_funding", org_id=org, project_id=project, staff_npub=STAFF, operator_url=GE,
+                       invoice_id="INV9", sats=1000, paid_at=when, npub=OWNER))["ok"]
+    [f] = (await call("funding_ledger", org_id=org, npub=OWNER))["fundings"]
+    assert f["paid_at"] == when
+    future = await call("record_funding", org_id=org, project_id=project, staff_npub=STAFF, operator_url=GE,
+                        invoice_id="INV10", sats=1, paid_at=int(time.time()) + 86_400, npub=OWNER)
+    assert future.get("ok") is not True and "paid_at" in json.dumps(future)
+
+
 def test_every_domain_tool_has_a_unique_frozen_uuid():
     ids = [ti.tool_id for ti in server._DOMAIN_TOOLS]
     assert len(ids) == len(set(ids)) == 10

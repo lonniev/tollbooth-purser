@@ -80,7 +80,8 @@ export const assignMember = (orgId: string, projectId: string, staffNpub: string
 export const setOperators = (orgId: string, operators: Operator[]) =>
   purser("set_operators", { org_id: orgId, operators });
 
-export const recordFunding = (orgId: string, f: Omit<Funding, "funding_id" | "paid_at">) =>
+/** Book a paid invoice to a Project; `paid_at` (unix seconds) is when it settled, now when omitted. */
+export const recordFunding = (orgId: string, f: Omit<Funding, "funding_id" | "paid_at"> & { paid_at?: number }) =>
   purser("record_funding", { org_id: orgId, ...f });
 
 export const fundingLedger = async (orgId: string, since = 0) =>

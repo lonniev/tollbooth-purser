@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { change, foldSeries, runningTotals, lastDays, ledgerCsv, overview, periodStart, projectBurn, type Funding, type Statement } from "./analytics.ts";
+import { bareTool, change, foldSeries, runningTotals, splitToolKey, unbooked, lastDays, ledgerCsv, overview, periodStart, projectBurn, type Funding, type Statement } from "./analytics.ts";
 
 const TODAY = new Date(Date.UTC(2026, 10, 12));
 const GE = "https://goodearth-mcp.fastmcp.app/mcp";
@@ -37,6 +37,7 @@ test("the overview splits this period from the one before", () => {
   assert.equal(o.used.prior, 20);
   assert.equal(o.calls.value, 6);
   assert.deepEqual(o.used.daily, [0, 10, 45]);
+  assert.deepEqual(splitToolKey(o.callsByTool[0].key), { operator: GE, tool: "plot" });
   assert.deepEqual(o.topStaff, [{ key: "sam", value: 50 }, { key: "kim", value: 5 }]);
   assert.deepEqual(o.operatorOrder, [GE, BR]);
   assert.equal(o.balance, 600);
@@ -90,5 +91,26 @@ test("credited and used run as totals from the period's first day", () => {
   assert.deepEqual(runningTotals([{ date: "a", credited: 10, used: 1 }, { date: "b", credited: 0, used: 2 }]), [
     { date: "a", credited: 10, used: 1 },
     { date: "b", credited: 10, used: 3 },
+  ]);
+});
+
+test("a tool loses its Operator's prefix, and nothing else", () => {
+  assert.equal(bareTool("goodearth_almanac", "goodearth"), "almanac");
+  assert.equal(bareTool("almanac", "goodearth"), "almanac");
+  assert.equal(bareTool("goodearth_almanac", undefined), "goodearth_almanac");
+});
+
+test("a settled purchase no funding names is unbooked; a booked or unpaid one is not", () => {
+  const s: Statement = {
+    staff: "willie", operator: GE,
+    statement: { purchase_history: [
+      { invoice_id: "A", status: "Settled", amount_sats: 1000, api_sats_credited: 1000, created_at: "2026-11-12T22:00:00Z", settled_at: "2026-11-12T22:01:00Z" },
+      { invoice_id: "B", status: "Settled", amount_sats: 500, api_sats_credited: 500, created_at: "2026-11-11T22:00:00Z" },
+      { invoice_id: "C", status: "New", amount_sats: 9, api_sats_credited: 0, created_at: "2026-11-12T23:00:00Z" },
+    ] },
+  };
+  const f: Funding = { funding_id: "1", project_id: "p", staff_npub: "willie", operator_url: GE, invoice_id: "B", sats: 500, paid_at: 1 };
+  assert.deepEqual(unbooked([s], [f]), [
+    { staff: "willie", operator: GE, invoice_id: "A", sats: 1000, paid_at: Date.parse("2026-11-12T22:01:00Z") / 1000 },
   ]);
 });
