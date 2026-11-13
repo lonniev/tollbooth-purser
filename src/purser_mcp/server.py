@@ -219,6 +219,20 @@ def _operator_url(value: str) -> str:
     return url
 
 
+#: How far back a settled invoice may be booked: a year of books.
+MAX_BOOKING_AGE = 366 * 86_400
+
+
+def _paid_at(value: int) -> int:
+    now = int(time.time())
+    if not value:
+        return now
+    when = _sats(value, "paid_at")
+    if when > now + 300 or when < now - MAX_BOOKING_AGE:
+        raise ValueError("paid_at is when it settled: not in the future, and within the past year.")
+    return when
+
+
 async def _owned(npub: str, org_id: str) -> PurserStore:
     """The store, once the caller is shown to own *org_id*. A refusal raises, so the fare is refunded."""
     db = await store()
@@ -399,12 +413,13 @@ async def set_operators(org_id: str, operators: list[dict[str, str]], npub: Patr
 @runtime.paid_tool(RECORD_FUNDING_UUID)
 async def record_funding(
     org_id: str, project_id: str, staff_npub: str, operator_url: str,
-    invoice_id: str, sats: int, npub: PatronNpub = "",
+    invoice_id: str, sats: int, paid_at: int = 0, npub: PatronNpub = "",
 ) -> dict[str, Any]:
     """Record a top-up you paid for a member, against a Project.
 
-    Purser's console calls this after check_payment at the Operator says the
-    invoice settled. Recording the same invoice again changes nothing.
+    Purser's console calls this once check_payment at the Operator says the
+    invoice settled, or when it books a settled invoice it finds in the
+    member's statement there. Recording the same invoice again changes nothing.
 
     Args:
         org_id: The Organization.
@@ -413,6 +428,9 @@ async def record_funding(
         operator_url: The Operator's MCP endpoint, https://…/mcp.
         invoice_id: The invoice id the Operator gave.
         sats: What you paid, in sats.
+        paid_at: When it settled, in unix seconds, as the Operator's statement
+            says. Omit for now. It may not be in the future or more than a
+            year past.
     """
     staff = _npub(staff_npub, "staff_npub")
     funding = {
@@ -421,7 +439,7 @@ async def record_funding(
         "operator_url": _operator_url(operator_url),
         "invoice_id": _text(invoice_id, "invoice_id"),
         "sats": _sats(sats, "sats", ceiling=MAX_FUNDING_SATS),
-        "paid_at": int(time.time()),
+        "paid_at": _paid_at(paid_at),
     }
     db = await _owned(npub, org_id)
     if staff not in {m["staff_npub"] for m in await db.members(npub, org_id)}:

@@ -10,7 +10,8 @@ import { RefreshCw } from "lucide-react";
 import {
   BudgetBars, DailyLines, FigureTile, HBars, OTHER, Panel, RankedList, SLOTS, StackedDaily, StatTile, sats, slotColor,
 } from "../components/Charts";
-import { foldSeries, overview, projectBurn, type Funding, type Statement } from "../lib/analytics";
+import { operatorClient } from "@tollbooth-dpyc/web";
+import { bareTool, foldSeries, overview, projectBurn, splitToolKey, type Funding, type Statement } from "../lib/analytics";
 import { memberName, operatorName, useOrg } from "../lib/org";
 import { fundingLedger, statements } from "../lib/purser";
 
@@ -25,6 +26,17 @@ export default function Overview() {
   const [loading, setLoading] = useState(false);
   const [problem, setProblem] = useState("");
   const [tick, setTick] = useState(0);
+  const [prefixes, setPrefixes] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!detail) return;
+    let live = true;
+    Promise.all(detail.operators.map(async (o) => [o.url, await operatorClient(o.url).prefix().catch(() => "")] as const))
+      .then((pairs) => live && setPrefixes(Object.fromEntries(pairs)));
+    return () => {
+      live = false;
+    };
+  }, [detail]);
 
   useEffect(() => {
     if (!detail) return;
@@ -119,7 +131,12 @@ export default function Overview() {
 
       <div className="grid-2">
         <Panel title="Calls by tool">
-          <HBars rows={o.callsByTool} name={(k) => k} unit="calls" empty="No calls in this period." />
+          <HBars rows={o.callsByTool} unit="calls" empty="No calls in this period."
+            name={(k) => {
+              const { operator, tool } = splitToolKey(k);
+              const bare = bareTool(tool, prefixes[operator]);
+              return detail.operators.length > 1 ? `${bare} · ${operatorName(detail, operator)}` : bare;
+            }} />
         </Panel>
         <Panel title="Credited and used, running total">
           <DailyLines

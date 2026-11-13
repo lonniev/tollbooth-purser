@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import {
   BudgetBars, DailyLines, FigureTile, HBars, Panel, RankedList, StackedDaily, StatTile, sats, slotColor,
 } from "../src/components/Charts";
-import { lastDays, overview, projectBurn, type Funding, type Statement } from "../src/lib/analytics";
+import { lastDays, overview, projectBurn, splitToolKey, type Funding, type Statement } from "../src/lib/analytics";
 import "../src/index.css";
 
 const today = new Date();
@@ -46,7 +46,7 @@ createRoot(document.getElementById("root")!).render(
     </div>
     <Panel title="Usage by Operator"><StackedDaily data={data} series={series} unit="api_sats" /></Panel>
     <div className="grid-2">
-      <Panel title="Calls by tool"><HBars rows={o.callsByTool} name={(k) => k} unit="calls" empty="" /></Panel>
+      <Panel title="Calls by tool"><HBars rows={o.callsByTool} name={(k) => splitToolKey(k).tool} unit="calls" empty="" /></Panel>
       <Panel title="Credited and used, running total"><DailyLines data={o.fundingVsUse} series={[{ key: "credited", label: "Credited", color: slotColor(0) }, { key: "used", label: "Used", color: slotColor(1) }]} unit="api_sats" /></Panel>
       <Panel title="Expired (demurrage)"><HBars rows={o.expiredByStaff} name={(k) => k} unit="api_sats" empty="Nothing has expired." /></Panel>
       <Panel title="Project budgets, this period"><BudgetBars rows={burn} /></Panel>

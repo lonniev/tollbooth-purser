@@ -168,7 +168,8 @@ export function HBars({ rows, name, unit, empty }: { rows: Ranked[]; name: (key:
       <ResponsiveContainer>
         <BarChart data={top} layout="vertical" margin={{ top: 0, right: 8, bottom: 0, left: 0 }}>
           <XAxis type="number" hide />
-          <YAxis type="category" dataKey="label" width={120} {...axis} axisLine={false} />
+          <YAxis type="category" dataKey="label" width={168} {...axis} axisLine={false}
+            tickFormatter={(v: string) => (v.length > 26 ? `${v.slice(0, 25)}…` : v)} />
           <Tooltip cursor={{ fill: "var(--tb-surface-2)" }}
             content={({ active, payload }) => active && payload?.length ? (
               <div className="viz-tooltip num">{payload[0].payload.label}: {sats(payload[0].value as number)} {unit}</div>

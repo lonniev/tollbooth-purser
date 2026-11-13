@@ -1,0 +1,2 @@
+- The Ledger lists **Paid, not booked**: settled purchases at your Operators that no Project names yet, such as a top-up paid after its panel closed. **Book** names its Project, at the time it settled. `purser_record_funding` takes `paid_at` for this (at most a year back, never ahead).
+- Calls by tool names each tool without its Operator's prefix, and with the Operator beside it when there are several; long names no longer clip.
