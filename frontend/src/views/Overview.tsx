@@ -13,6 +13,7 @@ import {
 import { operatorClient } from "@tollbooth-dpyc/web";
 import { tourTarget, useTour } from "@tollbooth-dpyc/web/react";
 import { HelpButton } from "../components/Controls";
+import { OperatorLink, PersonLink } from "../components/EntityLink";
 import { bareTool, foldSeries, overview, projectBurn, splitToolKey, type Funding, type Statement } from "../lib/analytics";
 import { memberName, operatorName, useOrg } from "../lib/org";
 import { fundingLedger, statements } from "../lib/purser";
@@ -128,10 +129,10 @@ export default function Overview() {
 
       <div className="grid-2">
         <Panel title="Top people" tour="overview.people" action={<Link to="/people" className="text-xs underline">People ›</Link>}>
-          <RankedList rows={o.topStaff} name={(k) => memberName(detail, k)} unit="api_sats" empty="No use in this period." />
+          <RankedList rows={o.topStaff} name={(k) => <PersonLink npub={k} />} unit="api_sats" empty="No use in this period." />
         </Panel>
         <Panel title="Top Operators" action={<Link to="/setup" className="text-xs underline">Operators ›</Link>}>
-          <RankedList rows={o.topOperators} name={(k) => operatorName(detail, k)} unit="api_sats" empty="No use in this period." />
+          <RankedList rows={o.topOperators} name={(k) => <OperatorLink url={k} />} unit="api_sats" empty="No use in this period." />
         </Panel>
       </div>
 
@@ -178,7 +179,7 @@ export default function Overview() {
             <ul className="max-h-64 overflow-y-auto text-sm">
               {missing.map((m) => (
                 <li key={`${m.staff}|${m.operator}`}>
-                  {memberName(detail, m.staff)} at {operatorName(detail, m.operator)}: <span className="muted">{m.why}</span>
+                  <PersonLink npub={m.staff} /> at <OperatorLink url={m.operator} />: <span className="muted">{m.why}</span>
                 </li>
               ))}
             </ul>
