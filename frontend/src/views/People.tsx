@@ -17,6 +17,7 @@ import ProveAt from "../components/ProveAt";
 import SponsorAt from "../components/SponsorAt";
 import Term from "../components/Term";
 import TopUpAt from "../components/TopUpAt";
+import { OperatorLink } from "../components/EntityLink";
 import { sats } from "../components/Charts";
 import type { Funding } from "../lib/analytics";
 import { inviteText } from "../lib/invite";
@@ -344,7 +345,7 @@ function MemberDetail({ member, last, onChanged, onRemoved }: {
             const paid = last.get(`${member.staff_npub}|${o.url}`);
             return (
               <div key={o.url} className="acct-row">
-                <span className="acct-name">{name}</span>
+                <span className="acct-name"><OperatorLink url={o.url} /></span>
                 <span className="acct-last muted text-sm">
                   {paid ? <>Last top-up <span className="num">{sats(paid.sats)}</span> sats · {shortDate(paid.paid_at)}</> : "No top-up yet"}
                 </span>

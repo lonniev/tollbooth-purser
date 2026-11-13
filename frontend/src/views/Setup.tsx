@@ -8,6 +8,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Plus, X } from "lucide-react";
 import { tourTarget, useTour } from "@tollbooth-dpyc/web/react";
 import { AddButton, HelpButton, SearchButton, Toolbar } from "../components/Controls";
@@ -87,6 +88,13 @@ function Operators({ chosen, onSave }: { chosen: Operator[]; onSave: (next: Oper
   const [looking, setLooking] = useState(false);
   const [problem, setProblem] = useState("");
   const have = new Set(chosen.map((o) => o.url));
+  const [params] = useSearchParams();
+  const opened = params.get("open");
+
+  useEffect(() => {
+    if (!opened) return;
+    document.querySelector(`[data-op="${CSS.escape(opened)}"]`)?.scrollIntoView({ block: "center" });
+  }, [opened, chosen]);
 
   useEffect(() => {
     const q = query.trim();
@@ -147,7 +155,7 @@ function Operators({ chosen, onSave }: { chosen: Operator[]; onSave: (next: Oper
       {chosen.length === 0 && !query.trim() && <p className="muted text-sm">None yet. Tap the magnifier to find one.</p>}
       <div className="grid gap-2">
         {chosen.map((o) => (
-          <div key={o.url} className="op-line flex flex-wrap items-center justify-between gap-2 text-sm">
+          <div key={o.url} data-op={o.url} className={`op-line ${o.url === opened ? "op-on " : ""}flex flex-wrap items-center justify-between gap-2 text-sm`}>
             <span className="font-medium">{o.name}</span>
             <span className="flex flex-wrap items-center gap-2">
               <ProveAt operator={o.url} />

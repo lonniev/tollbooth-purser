@@ -1,0 +1,1 @@
+- Every Project, person and Operator named on the Ledger, Overview and a person's Balance at Operators is a link that opens it; an Operator opens on Setup, outlined.

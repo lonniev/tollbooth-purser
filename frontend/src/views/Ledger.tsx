@@ -11,6 +11,7 @@ import { tourTarget, useTour } from "@tollbooth-dpyc/web/react";
 import { sats } from "../components/Charts";
 import { HelpButton, Paging, SearchButton, Toolbar } from "../components/Controls";
 import Term from "../components/Term";
+import { OperatorLink, PersonLink, ProjectLink } from "../components/EntityLink";
 import { ledgerCsv, unbooked, type Funding, type Unbooked } from "../lib/analytics";
 import { memberName, operatorName, useOrg } from "../lib/org";
 import { forgetIntent, intentFor } from "../lib/intents";
@@ -113,9 +114,9 @@ export default function Ledger() {
               {pageRows(shown, page, PAGE).map((f) => (
                 <tr key={f.funding_id}>
                   <td className="num">{new Date(f.paid_at * 1000).toLocaleDateString()}</td>
-                  <td>{project(f.project_id)}</td>
-                  <td>{memberName(detail, f.staff_npub)}</td>
-                  <td>{operatorName(detail, f.operator_url)}</td>
+                  <td><ProjectLink id={f.project_id} /></td>
+                  <td><PersonLink npub={f.staff_npub} /></td>
+                  <td><OperatorLink url={f.operator_url} /></td>
                   <td className="num text-right">{sats(f.sats)}</td>
                 </tr>
               ))}
@@ -172,7 +173,7 @@ function BookRow({ item, onBooked }: { item: Unbooked; onBooked: () => void }) {
   return (
     <div className="flex flex-wrap items-center gap-2 border-t pt-2 text-sm" style={{ borderColor: "var(--tb-line)" }}>
       <span className="flex-1">
-        {memberName(detail, item.staff)} at {operatorName(detail, item.operator)}
+        <PersonLink npub={item.staff} /> at <OperatorLink url={item.operator} />
         <span className="muted"> · {item.paid_at ? new Date(item.paid_at * 1000).toLocaleDateString() : "—"}</span>
       </span>
       <span className="num">{sats(item.sats)} sats</span>
