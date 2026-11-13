@@ -1,0 +1,6 @@
+- Console pages hold hundreds of people and dozens of Projects: search with the round magnifier, sort, page, and open a row in place. Each add form sits behind a round **+**.
+- A person's balances are read only when their row opens, and the Overview reads accounts six at a time.
+- Secure Courier DMs look the same everywhere: who got the DM, the phrase it is marked with, and one button to collect the approval. This device remembers a DM it is waiting on across reloads, and People shows who still has to approve. Offering to sponsor someone gives you a note to send them.
+- A **Guide** page explains how Purser works, has a searchable list of terms, and offers walks of each page. Words on the pages show their meaning when tapped.
+- Every page has a guided tour, which the **?** button replays and a Live tutorial switch turns on or off.
+- The Profile adds "You as a sponsor" (your npub and the invitation to copy), "Where you are proven" (Prove me here at each Operator), and the tutorial switch.

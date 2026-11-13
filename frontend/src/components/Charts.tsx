@@ -70,9 +70,13 @@ export function FigureTile({ label, value, note }: { label: string; value: strin
   );
 }
 
-export function Panel({ title, action, children, className = "" }: { title: string; action?: ReactNode; children: ReactNode; className?: string }) {
+export function Panel({ title, action, children, className = "", tour }: {
+  title: string; action?: ReactNode; children: ReactNode; className?: string;
+  /** The tour's name for this panel. */
+  tour?: string;
+}) {
   return (
-    <section className={`card panel ${className}`}>
+    <section className={`card panel ${className}`} data-tour={tour}>
       <div className="panel-head">
         <h2 className="panel-title">{title}</h2>
         {action}
@@ -182,12 +186,22 @@ export function HBars({ rows, name, unit, empty }: { rows: Ranked[]; name: (key:
 }
 
 /** Each Project: funded this period against its budget, as a filled track. */
+/** One budget's bar: funded against budget, red once over. */
+export function BudgetMeter({ funded, budget }: { funded: number; budget: number }) {
+  const share = budget > 0 ? Math.min(1, funded / budget) : 0;
+  const over = budget > 0 && funded > budget;
+  return (
+    <div className="h-2 rounded-full" style={{ background: "var(--tb-surface-2)" }}>
+      <div className="h-2 rounded-full" style={{ width: `${share * 100}%`, background: over ? "var(--delta-bad)" : "var(--series-1)" }} />
+    </div>
+  );
+}
+
 export function BudgetBars({ rows }: { rows: { key: string; funded: number; budget: number }[] }) {
   if (!rows.length) return <p className="muted text-sm">No Projects yet.</p>;
   return (
     <div className="grid gap-3">
       {rows.map((r) => {
-        const share = r.budget > 0 ? Math.min(1, r.funded / r.budget) : 0;
         const over = r.budget > 0 && r.funded > r.budget;
         return (
           <div key={r.key} title={`${r.key}: ${sats(r.funded)} of ${sats(r.budget)} sats`}>
@@ -195,9 +209,7 @@ export function BudgetBars({ rows }: { rows: { key: string; funded: number; budg
               <span className="truncate">{r.key}</span>
               <span className="num">{sats(r.funded)} <span className="muted">/ {r.budget ? sats(r.budget) : "no budget"}</span></span>
             </div>
-            <div className="mt-1 h-2 rounded-full" style={{ background: "var(--tb-surface-2)" }}>
-              <div className="h-2 rounded-full" style={{ width: `${share * 100}%`, background: over ? "var(--delta-bad)" : "var(--series-1)" }} />
-            </div>
+            <div className="mt-1"><BudgetMeter funded={r.funded} budget={r.budget} /></div>
             {over && <p className="error mt-1 text-xs">Over budget by {sats(r.funded - r.budget)} sats</p>}
           </div>
         );

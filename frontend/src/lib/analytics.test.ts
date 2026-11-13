@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { bareTool, change, foldSeries, runningTotals, splitToolKey, unbooked, lastDays, ledgerCsv, overview, periodStart, projectBurn, type Funding, type Statement } from "./analytics.ts";
+import { bareTool, change, earliestPeriodStart, foldSeries, runningTotals, splitToolKey, unbooked, lastDays, ledgerCsv, overview, periodStart, projectBurn, type Funding, type Statement } from "./analytics.ts";
 
 const TODAY = new Date(Date.UTC(2026, 10, 12));
 const GE = "https://goodearth-mcp.fastmcp.app/mcp";
@@ -73,7 +73,9 @@ test("a project's burn counts only its current period", () => {
     ],
     TODAY,
   );
-  assert.deepEqual(burn, [{ key: "Spring", funded: 700, budget: 5000 }]);
+  assert.deepEqual(burn, [{ id: "p", key: "Spring", funded: 700, budget: 5000 }]);
+  assert.equal(earliestPeriodStart(["month", "quarter"], TODAY), Date.UTC(2026, 9, 1) / 1000);
+  assert.equal(earliestPeriodStart(["month", "none"], TODAY), 0);
   assert.equal(periodStart("quarter", TODAY), Date.UTC(2026, 9, 1) / 1000);
   assert.equal(periodStart("none", TODAY), 0);
 });

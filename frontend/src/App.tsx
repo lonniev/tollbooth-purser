@@ -1,10 +1,13 @@
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { BarChart3, FolderKanban, ReceiptText, Settings, Users, Wallet as WalletIcon } from "lucide-react";
-import { AccountPage, AppShell, SiteNav, Wallet, matchesPath, useAppShell } from "@tollbooth-dpyc/web/react";
+import { BarChart3, BookOpen, FolderKanban, ReceiptText, Settings, Users, Wallet as WalletIcon } from "lucide-react";
+import { AppShell, SiteNav, TourProvider, Wallet, matchesPath, useAppShell, useTour } from "@tollbooth-dpyc/web/react";
 import type { ReactNode } from "react";
 import { OrgProvider, useOrg } from "./lib/org";
+import { TOURS } from "./lib/tours";
+import Guide from "./views/Guide";
 import Ledger from "./views/Ledger";
 import Overview from "./views/Overview";
+import Profile from "./views/Profile";
 import People from "./views/People";
 import Projects from "./views/Projects";
 import Setup from "./views/Setup";
@@ -18,6 +21,7 @@ const PAGES = [
   { href: "/ledger", label: "Ledger", icon: <ReceiptText size={18} aria-hidden /> },
   { href: "/setup", label: "Setup", icon: <Settings size={18} aria-hidden /> },
   { href: "/wallet", label: "Wallet", icon: <WalletIcon size={18} aria-hidden /> },
+  { href: "/guide", label: "Guide", icon: <BookOpen size={18} aria-hidden /> },
 ];
 
 const NAV_CLASSES = {
@@ -57,7 +61,8 @@ function Nav() {
     return (
       <header className="site-bar flex flex-wrap items-center gap-2 px-4 py-2.5">
         <Brand />
-        <Link to="/signin" className="chip chip-accent ml-auto">Sign in</Link>
+        <Link to="/guide" className="chip ml-auto">Guide</Link>
+        <Link to="/signin" className="chip chip-accent">Sign in</Link>
       </header>
     );
   }
@@ -104,7 +109,10 @@ function Home() {
         You see their balances, pay their top-ups from your own wallet, book each one to a Project, and watch where the sats go.
         You never spend their balance, and they keep their own keys.
       </p>
-      <div><Link to="/signin" className="chip chip-accent">Sign in with your npub</Link></div>
+      <div className="flex flex-wrap gap-2">
+        <Link to="/signin" className="chip chip-accent">Sign in with your npub</Link>
+        <Link to="/guide" className="chip">How it works</Link>
+      </div>
       </div>
     </div>
   );
@@ -131,46 +139,42 @@ function OrgGate({ children }: { children: ReactNode }) {
   );
 }
 
-function Profile() {
-  const { session, status } = useAppShell();
-  return (
-    <div className="page">
-      <AccountPage
-        npub={session.npub}
-        heading={null}
-        build={{ status, frontend: { version: __APP_VERSION__, commit: __BUILD_COMMIT__, builtAt: __BUILD_TIME__, source: "https://github.com/lonniev/tollbooth-purser" } }}
-        theme={{ classNames: { chip: "chip", active: "chip chip-on" } }}
-        timezone={{ classNames: { select: "field" } }}
-        onSignOut={session.signOut}
-        classNames={{ root: "grid gap-3", section: "card panel", sectionHeading: "panel-title mb-1", sectionIntro: "muted mb-2 text-sm", actions: "card panel flex gap-2", signOut: "chip" }}
-      />
-    </div>
-  );
+function SignIn({ gate }: { gate: ReactNode }) {
+  useTour("signin");
+  return <div className="page"><div className="card mx-auto max-w-3xl p-6">{gate}</div></div>;
+}
+
+function WalletPage() {
+  useTour("wallet");
+  return <div className="page"><Wallet /></div>;
 }
 
 function Site() {
   const { session, gate } = useAppShell();
   return (
     <BrowserRouter>
+      <TourProvider tours={TOURS}>
       <div aria-hidden="true" className="backdrop" />
       <Nav />
       <main className="flex-1">
         <OrgProvider key={session.npub} enabled={session.signedIn}>
           <Routes>
             <Route index element={session.signedIn ? <Navigate to="/overview" replace /> : <Home />} />
-            <Route path="signin" element={session.signedIn ? <Navigate to="/overview" replace /> : <div className="page"><div className="card mx-auto max-w-3xl p-6">{gate}</div></div>} />
+            <Route path="signin" element={session.signedIn ? <Navigate to="/overview" replace /> : <SignIn gate={gate} />} />
             <Route path="overview" element={<Console><Overview /></Console>} />
             <Route path="people" element={<Console><People /></Console>} />
             <Route path="projects" element={<Console><Projects /></Console>} />
             <Route path="ledger" element={<Console><Ledger /></Console>} />
             <Route path="setup" element={<Console><Setup /></Console>} />
-            <Route path="wallet" element={session.signedIn ? <div className="page"><Wallet /></div> : <Navigate to="/signin" replace />} />
+            <Route path="wallet" element={session.signedIn ? <WalletPage /> : <Navigate to="/signin" replace />} />
+            <Route path="guide" element={<Guide />} />
             <Route path="profile" element={session.signedIn ? <Profile /> : <Navigate to="/signin" replace />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </OrgProvider>
       </main>
       <Footer />
+      </TourProvider>
     </BrowserRouter>
   );
 }
