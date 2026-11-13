@@ -235,3 +235,36 @@ table.ledger th.text-right, table.ledger td.text-right { text-align: right; }
 /* The Organization the console shows, at the right: its name or a switcher, then its settings. */
 .org-head { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; }
 .org-pick { font: inherit; font-size: 1.25rem; font-weight: 600; color: inherit; background: transparent; border: 1px solid var(--tb-line); border-radius: 0.5rem; padding: 0.25rem 0.5rem; }
+
+/* One person, open: who, their balance at each Operator, their Projects, and leaving. */
+.member-title { font-size: 0.9375rem; font-weight: 600; }
+.member-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.member-who { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.25rem 1rem; }
+.acct-list { display: grid; }
+.acct-row {
+  display: grid; grid-template-columns: minmax(8rem, 1fr) auto auto; align-items: center; gap: 0.25rem 1rem;
+  padding: 0.5rem 0; border-top: 1px solid var(--tb-line);
+}
+.acct-name { font-weight: 500; overflow-wrap: anywhere; }
+.acct-last { text-align: right; }
+.acct-act { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.5rem; }
+.acct-topup { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+@media (max-width: 40rem) {
+  .acct-row { grid-template-columns: 1fr auto; }
+  .acct-last { grid-column: 1 / -1; grid-row: 2; text-align: left; }
+}
+.member-leave { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.5rem 1rem; border-top: 1px solid var(--tb-line); padding-top: 0.75rem; }
+.member-leave p { flex: 1 1 18rem; }
+
+/* Paying stands out: the money action wears amber. */
+.chip-money { background: var(--series-4); border-color: var(--series-4); color: #1b1300; font-weight: 600; }
+.chip-money:hover { background: var(--series-4); filter: brightness(1.08); }
+.chip-money-on { box-shadow: 0 0 0 2px var(--tb-surface), 0 0 0 4px var(--series-4); }
+.chip-danger { border-color: var(--delta-bad); color: var(--delta-bad); }
+
+/* A chosen chip that opens its page, with its own ✕. */
+.chip-split { padding: 0; gap: 0; overflow: hidden; }
+.chip-link { padding: 0.25rem 0.375rem 0.25rem 0.75rem; color: inherit; }
+.chip-link:hover { text-decoration: underline; }
+.chip-x { display: inline-flex; align-items: center; padding: 0.25rem 0.625rem 0.25rem 0.375rem; background: none; border: none; color: inherit; cursor: pointer; }
+.chip-x:hover { background: var(--tb-surface-2); }

@@ -5,6 +5,7 @@
  */
 
 import { Fragment, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronRight, Plus } from "lucide-react";
 import { filterRows, pageRows, type SortDir } from "@tollbooth-dpyc/web";
 import { SortHeader, TableShell, tourTarget, useTour } from "@tollbooth-dpyc/web/react";
@@ -13,6 +14,7 @@ import { AddButton, HelpButton, Paging, SearchButton, Toolbar } from "../compone
 import PickMany from "../components/PickMany";
 import Term from "../components/Term";
 import { earliestPeriodStart, periodStart, projectBurn, type Funding } from "../lib/analytics";
+import { personHref } from "../lib/links";
 import { memberName, useOrg } from "../lib/org";
 import { assignMember, fundingLedger, saveProject, type Project } from "../lib/purser";
 
@@ -49,7 +51,8 @@ export default function Projects() {
   const [adding, setAdding] = useState(false);
   const [sort, setSort] = useState<{ col: string; dir: SortDir }>({ col: "name", dir: "asc" });
   const [page, setPage] = useState(0);
-  const [open, setOpen] = useState("");
+  const [params] = useSearchParams();
+  const [open, setOpen] = useState(params.get("open") ?? "");
   const [problem, setProblem] = useState("");
   useTour("projects", { ready: Boolean(detail) });
 
@@ -80,6 +83,16 @@ export default function Projects() {
   }, [rows, query, sort, detail]);
 
   useEffect(() => setPage(0), [query, sort]);
+
+  // A link that names a Project opens it, on whichever page it sits.
+  const asked = params.get("open") ?? "";
+  useEffect(() => {
+    if (!asked) return;
+    setOpen(asked);
+    const at = shown.findIndex((r) => r.project_id === asked);
+    if (at >= 0) setPage(Math.floor(at / PAGE));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asked, rows.length]);
   if (!detail) return null;
   const orgId = detail.organization.org_id;
 
@@ -155,8 +168,8 @@ export default function Projects() {
                           <div className="grid gap-3 py-1">
                             <ProjectForm project={r} onSave={(p) => act(() => saveProject(orgId, { ...p, project_id: r.project_id }))} />
                             <div className="grid gap-2">
-                              <h3 className="muted text-xs font-medium uppercase">People on it</h3>
-                              <PickMany label="Add a person…" chosen={new Set(r.staff)}
+                              <h3 className="member-title">People on it</h3>
+                              <PickMany label="Add a person…" chosen={new Set(r.staff)} href={personHref}
                                 items={detail.members.map((m) => ({ id: m.staff_npub, label: m.label, also: m.staff_npub }))}
                                 onToggle={(npub, on) => void act(() => assignMember(orgId, r.project_id, npub, on))} />
                               {!detail.members.length && <p className="muted text-sm">Add people first, on People.</p>}

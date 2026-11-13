@@ -3,3 +3,6 @@
 - A top-up made from People books itself to its Project on the Ledger, even when the wallet took the page away before it settled.
 - The Organization's name sits at the right of every console page, with a switcher when there are several and a link to its settings.
 - Numbers and their headers are right-aligned, and tables read at full size.
+- People: a person's Projects are links (two shown, the rest as "+N"), and Projects link back to their people; `?open=` opens a Project or person on any page.
+- An open person reads as sections: their npub with Copy, "Balance at Operators" with each Operator's last top-up and an amber Top up, their Projects, and "Remove from <Organization>" that says what it does and what stays.
+- The invitation is a ✉ copy button on People and a "Invite your people" topic in the Guide.

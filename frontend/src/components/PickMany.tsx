@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Plus, X } from "lucide-react";
 import { searchMatcher } from "@tollbooth-dpyc/web";
 
@@ -18,12 +19,14 @@ export interface Pickable {
 const OFFER_ALL = 12;
 const OFFER_SOME = 8;
 
-export default function PickMany({ items, chosen, onToggle, label, busy = false }: {
+export default function PickMany({ items, chosen, onToggle, label, busy = false, href }: {
   items: Pickable[];
   chosen: ReadonlySet<string>;
   onToggle: (id: string, on: boolean) => void;
   label: string;
   busy?: boolean;
+  /** Where a chosen item's page is, so its chip opens it. */
+  href?: (id: string) => string;
 }) {
   const [query, setQuery] = useState("");
   const on = items.filter((i) => chosen.has(i.id));
@@ -35,7 +38,15 @@ export default function PickMany({ items, chosen, onToggle, label, busy = false 
     <div className="grid gap-2">
       <div className="flex flex-wrap gap-1.5">
         {on.length === 0 && <span className="muted text-sm">None yet.</span>}
-        {on.map((i) => (
+        {on.map((i) => href ? (
+          <span key={i.id} className="chip chip-on chip-split">
+            <Link to={href(i.id)} className="chip-link">{i.label}</Link>
+            <button type="button" className="chip-x" disabled={busy} onClick={() => onToggle(i.id, false)}
+              aria-label={`Take off ${i.label}`} title={`Take off ${i.label}`}>
+              <X size={13} aria-hidden />
+            </button>
+          </span>
+        ) : (
           <button key={i.id} type="button" className="chip chip-on" disabled={busy} onClick={() => onToggle(i.id, false)} aria-label={`Take off ${i.label}`}>
             {i.label} <X size={12} aria-hidden />
           </button>

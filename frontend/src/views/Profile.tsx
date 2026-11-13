@@ -4,6 +4,7 @@
  * page is proven as the owner, and the tutorial switch.
  */
 
+import { inviteText } from "../lib/invite";
 import { Link } from "react-router-dom";
 import { Copy } from "lucide-react";
 import { AccountPage, tourTarget, useAppShell, useTour } from "@tollbooth-dpyc/web/react";
@@ -47,7 +48,7 @@ function CopyRow({ text, label }: { text: string; label: string }) {
 }
 
 function AsSponsor({ npub }: { npub: string }) {
-  const invite = `Please ask me to sponsor you at each Operator you use for our work. My npub is ${npub}. In your account there, ask by npub, then I approve.`;
+  const invite = inviteText(npub);
   return (
     <section className="card panel grid gap-2" {...tourTarget("account.sponsor")}>
       <h2 className="panel-title">You as a sponsor</h2>
