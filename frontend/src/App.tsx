@@ -4,16 +4,18 @@ import { AppShell, SiteNav, TourProvider, Wallet, matchesPath, useAppShell, useT
 import Waiting from "./components/Waiting";
 import { decorateTile } from "./lib/tiles";
 import { orgHref } from "./lib/links";
-import type { ReactNode } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 import { OrgProvider, useOrg } from "./lib/org";
 import { TOURS } from "./lib/tours";
-import Guide from "./views/Guide";
-import Ledger from "./views/Ledger";
-import Overview from "./views/Overview";
-import Profile from "./views/Profile";
-import People from "./views/People";
-import Projects from "./views/Projects";
-import Organizations from "./views/Organizations";
+
+// Each page is its own chunk, fetched the first time it opens.
+const Guide = lazy(() => import("./views/Guide"));
+const Ledger = lazy(() => import("./views/Ledger"));
+const Overview = lazy(() => import("./views/Overview"));
+const Profile = lazy(() => import("./views/Profile"));
+const People = lazy(() => import("./views/People"));
+const Projects = lazy(() => import("./views/Projects"));
+const Organizations = lazy(() => import("./views/Organizations"));
 
 const WELCOME = "Sponsor your people's use of Tollbooth DPYC Operators, and see where the sats go.";
 
@@ -179,19 +181,21 @@ function Site() {
       <Nav />
       <main className="flex-1">
         <OrgProvider key={session.npub} enabled={session.signedIn}>
-          <Routes>
-            <Route index element={session.signedIn ? <Navigate to="/overview" replace /> : <Home />} />
-            <Route path="signin" element={session.signedIn ? <Navigate to="/overview" replace /> : <SignIn gate={gate} />} />
-            <Route path="overview" element={<Console><Overview /></Console>} />
-            <Route path="people" element={<Console><People /></Console>} />
-            <Route path="projects" element={<Console><Projects /></Console>} />
-            <Route path="ledger" element={<Console><Ledger /></Console>} />
-            <Route path="organizations" element={<Console><Organizations /></Console>} />
-            <Route path="wallet" element={session.signedIn ? <WalletPage /> : <Navigate to="/signin" replace />} />
-            <Route path="guide" element={<Guide />} />
-            <Route path="profile" element={session.signedIn ? <Profile /> : <Navigate to="/signin" replace />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <Suspense fallback={<Waiting heading="Opening the page…" />}>
+            <Routes>
+              <Route index element={session.signedIn ? <Navigate to="/overview" replace /> : <Home />} />
+              <Route path="signin" element={session.signedIn ? <Navigate to="/overview" replace /> : <SignIn gate={gate} />} />
+              <Route path="overview" element={<Console><Overview /></Console>} />
+              <Route path="people" element={<Console><People /></Console>} />
+              <Route path="projects" element={<Console><Projects /></Console>} />
+              <Route path="ledger" element={<Console><Ledger /></Console>} />
+              <Route path="organizations" element={<Console><Organizations /></Console>} />
+              <Route path="wallet" element={session.signedIn ? <WalletPage /> : <Navigate to="/signin" replace />} />
+              <Route path="guide" element={<Guide />} />
+              <Route path="profile" element={session.signedIn ? <Profile /> : <Navigate to="/signin" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </OrgProvider>
       </main>
       <Footer />

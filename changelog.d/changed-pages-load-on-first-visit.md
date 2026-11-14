@@ -1,0 +1,1 @@
+- Each page loads on first visit, so the console opens faster; Overview's charts arrive with Overview.
