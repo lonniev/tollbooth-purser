@@ -1,12 +1,13 @@
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { BarChart3, BookOpen, Building2, FolderKanban, ReceiptText, Users, Wallet as WalletIcon } from "lucide-react";
-import { AppShell, SiteNav, TourProvider, Wallet, matchesPath, useAppShell, useTour } from "@tollbooth-dpyc/web/react";
+import { AppShell, SiteNav, TourProvider, Tx, Wallet, matchesPath, useAppShell, useTour } from "@tollbooth-dpyc/web/react";
 import Waiting from "./components/Waiting";
 import { decorateTile } from "./lib/tiles";
 import { orgHref } from "./lib/links";
-import { lazy, Suspense, type ReactNode } from "react";
+import { lazy, Suspense, useMemo, type ReactNode } from "react";
 import { OrgProvider, useOrg } from "./lib/org";
-import { TOURS } from "./lib/tours";
+import { tours } from "./lib/tours";
+import { useT, WORDS, type Translate } from "./i18n";
 
 // Each page is its own chunk, fetched the first time it opens.
 const Guide = lazy(() => import("./views/Guide"));
@@ -17,16 +18,14 @@ const People = lazy(() => import("./views/People"));
 const Projects = lazy(() => import("./views/Projects"));
 const Organizations = lazy(() => import("./views/Organizations"));
 
-const WELCOME = "Sponsor your people's use of Tollbooth DPYC Operators, and see where the sats go.";
-
-const PAGES = [
-  { href: "/overview", label: "Overview", icon: <BarChart3 size={18} aria-hidden /> },
-  { href: "/organizations", label: "Organizations", icon: <Building2 size={18} aria-hidden /> },
-  { href: "/projects", label: "Projects", icon: <FolderKanban size={18} aria-hidden /> },
-  { href: "/people", label: "People", icon: <Users size={18} aria-hidden /> },
-  { href: "/ledger", label: "Ledger", icon: <ReceiptText size={18} aria-hidden /> },
-  { href: "/wallet", label: "Wallet", icon: <WalletIcon size={18} aria-hidden /> },
-  { href: "/guide", label: "Guide", icon: <BookOpen size={18} aria-hidden /> },
+const pages = (t: Translate) => [
+  { href: "/overview", label: t("ui.app.nav.overview"), icon: <BarChart3 size={18} aria-hidden /> },
+  { href: "/organizations", label: t("ui.app.nav.organizations"), icon: <Building2 size={18} aria-hidden /> },
+  { href: "/projects", label: t("ui.app.nav.projects"), icon: <FolderKanban size={18} aria-hidden /> },
+  { href: "/people", label: t("ui.app.nav.people"), icon: <Users size={18} aria-hidden /> },
+  { href: "/ledger", label: t("ui.app.nav.ledger"), icon: <ReceiptText size={18} aria-hidden /> },
+  { href: "/wallet", label: t("ui.app.nav.wallet"), icon: <WalletIcon size={18} aria-hidden /> },
+  { href: "/guide", label: t("ui.app.nav.guide"), icon: <BookOpen size={18} aria-hidden /> },
 ];
 
 const NAV_CLASSES = {
@@ -60,14 +59,15 @@ function Brand() {
 }
 
 function Nav() {
+  const t = useT();
   const { session } = useAppShell();
   const { pathname } = useLocation();
   if (!session.signedIn) {
     return (
       <header className="site-bar flex flex-wrap items-center gap-2 px-4 py-2.5">
         <Brand />
-        <Link to="/guide" className="chip ml-auto">Guide</Link>
-        <Link to="/signin" className="chip chip-accent">Sign in</Link>
+        <Link to="/guide" className="chip ml-auto">{t("ui.app.nav.guide")}</Link>
+        <Link to="/signin" className="chip chip-accent">{t("ui.app.signIn")}</Link>
       </header>
     );
   }
@@ -75,10 +75,10 @@ function Nav() {
     <header className="site-bar px-4 py-2">
       <SiteNav
         brand={<Brand />}
-        items={PAGES}
+        items={pages(t)}
         isActive={(href) => matchesPath(pathname, href)}
         renderLink={({ href, ...p }) => <Link to={href} {...p} />}
-        account={{ npub: session.npub, links: [{ href: "/profile", label: "Profile & theme" }], onSignOut: session.signOut }}
+        account={{ npub: session.npub, links: [{ href: "/profile", label: t("ui.app.profileTheme") }], onSignOut: session.signOut }}
         classNames={NAV_CLASSES}
       />
     </header>
@@ -86,6 +86,7 @@ function Nav() {
 }
 
 function Footer() {
+  const t = useT();
   const { status } = useAppShell();
   return (
     <footer className="site-bar space-y-1 px-4 py-4 text-center text-xs text-[var(--tb-muted)]" style={{ borderTop: "1px solid var(--tb-line)" }}>
@@ -95,28 +96,25 @@ function Footer() {
         {status?.tollbooth_dpyc_version && ` · SDK ${status.tollbooth_dpyc_version}`}
       </div>
       <div>
-        Monetized with{" "}
-        <a href="https://tollbooth-dpyc.com" target="_blank" rel="noopener noreferrer" className="underline">Tollbooth DPYC™</a>
-        {" · "}Apache-2.0 · Patent Pending (US Prov. 64/045,999)
+        <Tx ns={WORDS} k="ui.app.monetized" components={{
+          tb: <a href="https://tollbooth-dpyc.com" target="_blank" rel="noopener noreferrer" className="underline">Tollbooth DPYC™</a>,
+        }} />
+        {" · "}{t("ui.app.license")}
       </div>
     </footer>
   );
 }
 
 function Home() {
+  const t = useT();
   return (
     <div className="page py-10">
       <div className="card grid max-w-2xl gap-4 p-6">
-      <h1 className="text-3xl font-semibold">Sponsor your people's Operators.</h1>
-      <p className="muted">
-        Your Organization pays for the people it sponsors at each Tollbooth DPYC™ Operator they use.
-        Each person asks your npub to sponsor them there, or you offer, and the other approves.
-        You see their balances, pay their top-ups from your own wallet, assign each one to a Project, and watch where the sats go.
-        You never spend their balance, and they keep their own keys.
-      </p>
+      <h1 className="text-3xl font-semibold">{t("ui.app.home.title")}</h1>
+      <p className="muted">{t("ui.app.home.body")}</p>
       <div className="flex flex-wrap gap-2">
-        <Link to="/signin" className="chip chip-accent">Sign in with your npub</Link>
-        <Link to="/guide" className="chip">How it works</Link>
+        <Link to="/signin" className="chip chip-accent">{t("ui.app.home.signIn")}</Link>
+        <Link to="/guide" className="chip">{t("ui.app.home.how")}</Link>
       </div>
       </div>
     </div>
@@ -131,9 +129,10 @@ function Console({ children }: { children: ReactNode }) {
 }
 
 function OrgGate({ children }: { children: ReactNode }) {
+  const t = useT();
   const { detail, loading, problem } = useOrg();
   const { pathname } = useLocation();
-  if (loading && !detail) return <div className="page"><div className="card panel"><Waiting heading="Opening your Organization…" /></div></div>;
+  if (loading && !detail) return <div className="page"><div className="card panel"><Waiting heading={t("ui.app.openingOrg")} /></div></div>;
   if (problem && !detail) return <div className="page error">{problem}</div>;
   if (!detail && !pathname.startsWith("/organizations")) return <Navigate to="/organizations" replace />;
   return (
@@ -146,13 +145,14 @@ function OrgGate({ children }: { children: ReactNode }) {
 
 /** The Organization these pages show, top left: switch to another, or open it. */
 function OrgHead() {
+  const t = useT();
   const { orgs, detail, choose } = useOrg();
   if (!detail) return null;
   const { org_id, name } = detail.organization;
   return (
     <div className="org-head">
       {orgs.length > 1 ? (
-        <select className="org-pick" value={org_id} onChange={(e) => choose(e.target.value)} aria-label="Organization">
+        <select className="org-pick" value={org_id} onChange={(e) => choose(e.target.value)} aria-label={t("ui.app.organization")}>
           {orgs.map((o) => <option key={o.org_id} value={o.org_id}>{o.name}</option>)}
         </select>
       ) : (
@@ -173,15 +173,19 @@ function WalletPage() {
 }
 
 function Site() {
+  const t = useT();
   const { session, gate } = useAppShell();
+  // The tours, built again when the language changes (`t` changes with it).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const tourSet = useMemo(() => tours(), [t]);
   return (
     <BrowserRouter>
-      <TourProvider tours={TOURS}>
+      <TourProvider tours={tourSet}>
       <div aria-hidden="true" className="backdrop" />
       <Nav />
       <main className="flex-1">
         <OrgProvider key={session.npub} enabled={session.signedIn}>
-          <Suspense fallback={<Waiting heading="Opening the page…" />}>
+          <Suspense fallback={<Waiting heading={t("ui.app.openingPage")} />}>
             <Routes>
               <Route index element={session.signedIn ? <Navigate to="/overview" replace /> : <Home />} />
               <Route path="signin" element={session.signedIn ? <Navigate to="/overview" replace /> : <SignIn gate={gate} />} />
@@ -205,8 +209,9 @@ function Site() {
 }
 
 export default function App() {
+  const t = useT();
   return (
-    <AppShell theme="dark" gateOptions={{ welcome: WELCOME }} signedOut={() => <Site />}>
+    <AppShell theme="dark" gateOptions={{ welcome: t("ui.app.welcome") }} signedOut={() => <Site />}>
       {() => <Site />}
     </AppShell>
   );

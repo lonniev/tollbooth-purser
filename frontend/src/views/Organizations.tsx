@@ -12,7 +12,8 @@
 import { Fragment, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Check, Plus, X } from "lucide-react";
-import { tourTarget, useTour } from "@tollbooth-dpyc/web/react";
+import { Tx, tourTarget, useTour } from "@tollbooth-dpyc/web/react";
+import { useT, WORDS } from "../i18n";
 import { AddButton, HelpButton, SearchButton, Toolbar } from "../components/Controls";
 import { EntityLink } from "../components/EntityLink";
 import ProveAt from "../components/ProveAt";
@@ -28,6 +29,7 @@ import {
 const NAMES_SHOWN = 2;
 
 export default function Organizations() {
+  const t = useT();
   const { orgs, detail, choose, reload } = useOrg();
   const [params, setParams] = useSearchParams();
   const [others, setOthers] = useState<Record<string, OrgDetail>>({});
@@ -69,14 +71,18 @@ export default function Organizations() {
   return (
     <div className="grid gap-3">
       <section className="card panel" {...tourTarget("orgs.table")}>
-        <Toolbar title={detail ? <Term of="organization" label="Organizations" /> : "Create your Organization"} count={detail ? orgs.length : undefined}>
+        <Toolbar title={detail ? <Term of="organization" label={t("views.organizations.title")} /> : t("views.organizations.createYours")} count={detail ? orgs.length : undefined}>
           <HelpButton page="organizations" />
-          {detail && <AddButton open={creating} onToggle={() => setCreating(!creating)} label="New Organization" />}
+          {detail && <AddButton open={creating} onToggle={() => setCreating(!creating)} label={t("views.organizations.new")} />}
         </Toolbar>
         {creating && (
           <div className="mb-3">
-            {detail && <p className="muted mb-2 w-full text-sm">A new <Term of="organization" label="Organization" />, with its own people, Projects and Operators.</p>}
-            <NameForm initial="" label="Create" placeholder="Name, e.g. Acme Field Team"
+            {detail && (
+              <p className="muted mb-2 w-full text-sm">
+                <Tx ns={WORDS} k="views.organizations.newSays" components={{ org: <Term of="organization" /> }} />
+              </p>
+            )}
+            <NameForm initial="" label={t("views.organizations.create")} create placeholder={t("views.organizations.namePlaceholder")}
               onSave={(name) => act(async () => { const id = await saveOrganization(name); choose(id); setParams({ open: id }); setCreating(false); })} />
           </div>
         )}
@@ -85,7 +91,10 @@ export default function Organizations() {
           <div className="overflow-x-auto">
             <table className="ledger rows">
               <thead>
-                <tr><th>Organization</th><th className="text-right">People</th><th>Projects</th><th>Operators</th></tr>
+                <tr>
+                  <th>{t("views.organizations.col.organization")}</th><th className="text-right">{t("views.organizations.col.people")}</th>
+                  <th>{t("views.organizations.col.projects")}</th><th>{t("views.organizations.col.operators")}</th>
+                </tr>
               </thead>
               <tbody>
                 {orgs.map((o) => {
@@ -98,7 +107,7 @@ export default function Organizations() {
                       <tr className="row-open" aria-expanded={isOpen} onClick={() => toggle(o.org_id)}>
                         <td>
                           <span className="font-medium">{o.name}</span>
-                          {here && <span className="badge ml-2">Current</span>}
+                          {here && <span className="badge ml-2">{t("views.organizations.current")}</span>}
                         </td>
                         <td className="num text-right">{d ? d.members.length : "…"}</td>
                         <td><Names items={(d?.projects ?? []).map((p) => ({ key: p.project_id, name: p.name, to: projectHref(p.project_id) }))} onPick={pick} /></td>
@@ -138,37 +147,45 @@ function Names({ items, onPick }: { items: { key: string; name: string; to: stri
 function OrgDetailPanel({ org, here, onChoose, act }: {
   org: OrgDetail; here: boolean; onChoose: () => void; act: (step: () => Promise<unknown>) => Promise<void>;
 }) {
+  const t = useT();
   const id = org.organization.org_id;
   return (
     <div className="grid gap-3 py-2">
       <div className="flex flex-wrap items-center justify-end gap-2">
         {here ? (
-          <span className="muted flex items-center gap-1 text-sm"><Check size={14} aria-hidden /> The console shows this one</span>
+          <span className="muted flex items-center gap-1 text-sm"><Check size={14} aria-hidden /> {t("views.organizations.shown")}</span>
         ) : (
-          <button type="button" className="chip chip-accent" onClick={onChoose}>Show this one</button>
+          <button type="button" className="chip chip-accent" onClick={onChoose}>{t("views.organizations.show")}</button>
         )}
       </div>
-      <NameForm initial={org.organization.name} label="Rename" onSave={(name) => act(() => saveOrganization(name, id))} />
+      <NameForm initial={org.organization.name} label={t("views.organizations.rename")} onSave={(name) => act(() => saveOrganization(name, id))} />
       <Operators orgId={id} chosen={org.operators} onSave={(next) => act(() => setOperators(id, next))} />
     </div>
   );
 }
 
-function NameForm({ initial, label, placeholder, onSave }: { initial: string; label: string; placeholder?: string; onSave: (name: string) => Promise<void> }) {
+function NameForm({ initial, label, create = false, placeholder, onSave }: {
+  initial: string; label: string;
+  /** A new Organization: the button carries a +. */
+  create?: boolean;
+  placeholder?: string; onSave: (name: string) => Promise<void>;
+}) {
+  const t = useT();
   const [name, setName] = useState(initial);
   useEffect(() => setName(initial), [initial]);
   const ready = Boolean(name.trim()) && name.trim() !== initial;
   return (
     <form className="flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); if (ready) void onSave(name.trim()); }}>
-      <input className="field flex-1" placeholder={placeholder} value={name} onChange={(e) => setName(e.target.value)} aria-label="Organization name" />
+      <input className="field flex-1" placeholder={placeholder} value={name} onChange={(e) => setName(e.target.value)} aria-label={t("views.organizations.name")} />
       <button type="submit" className="chip chip-accent" disabled={!ready}>
-        {label === "Create" && <Plus size={14} aria-hidden />} {label}
+        {create && <Plus size={14} aria-hidden />} {label}
       </button>
     </form>
   );
 }
 
 function Operators({ orgId, chosen, onSave }: { orgId: string; chosen: Operator[]; onSave: (next: Operator[]) => Promise<void> }) {
+  const t = useT();
   const [query, setQuery] = useState("");
   const [found, setFound] = useState<Service[]>([]);
   const [looking, setLooking] = useState(false);
@@ -190,31 +207,31 @@ function Operators({ orgId, chosen, onSave }: { orgId: string; chosen: Operator[
     }
     let live = true;
     setLooking(true);
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       findOperators(q)
         .then((r) => live && (setFound(r), setProblem("")))
-        .catch((e) => live && setProblem(`The Oracle did not answer: ${(e as Error).message}`))
+        .catch((e) => live && setProblem(t("views.organizations.oracleFailed", { why: (e as Error).message })))
         .finally(() => live && setLooking(false));
     }, 300);
     return () => {
       live = false;
-      clearTimeout(t);
+      clearTimeout(timer);
     };
-  }, [query]);
+  }, [query, t]);
 
   return (
     <section key={orgId} className="grid gap-2" {...tourTarget("orgs.operators")}>
-      <Toolbar title="Operators" count={chosen.length}>
-        <SearchButton value={query} onChange={setQuery} label="Find by name, words or npub1…" />
+      <Toolbar title={t("views.organizations.operators")} count={chosen.length}>
+        <SearchButton value={query} onChange={setQuery} label={t("views.organizations.findOperator")} />
       </Toolbar>
       <p className="muted mb-2 text-sm">
-        The <Term of="operator" label="Operators" /> your people use. <Term of="prove" label="Authenticate" /> at each once, so Purser can read and pay for your people there.
+        <Tx ns={WORDS} k="views.organizations.operatorsSays" components={{ operators: <Term of="operator" />, prove: <Term of="prove" /> }} />
       </p>
 
       {query.trim() && (
         <div className="finder">
-          {looking && <p className="muted text-sm">Looking…</p>}
-          {!looking && found.length === 0 && !problem && <p className="muted text-sm">No Operator matches.</p>}
+          {looking && <p className="muted text-sm">{t("views.organizations.looking")}</p>}
+          {!looking && found.length === 0 && !problem && <p className="muted text-sm">{t("views.organizations.noMatch")}</p>}
           {found.length > 0 && (
             <ul className="grid gap-1">
               {found.map((s) => (
@@ -224,10 +241,10 @@ function Operators({ orgId, chosen, onSave }: { orgId: string; chosen: Operator[
                     {s.registry_description && <span className="muted block truncate text-xs">{s.registry_description}</span>}
                   </span>
                   {have.has(s.url) ? (
-                    <span className="muted text-xs">Added</span>
+                    <span className="muted text-xs">{t("views.organizations.added")}</span>
                   ) : (
                     <button type="button" className="chip" onClick={() => void onSave([...chosen, { url: s.url, name: s.display_name }])}>
-                      <Plus size={14} aria-hidden /> Add
+                      <Plus size={14} aria-hidden /> {t("views.organizations.add")}
                     </button>
                   )}
                 </li>
@@ -238,14 +255,14 @@ function Operators({ orgId, chosen, onSave }: { orgId: string; chosen: Operator[
         </div>
       )}
 
-      {chosen.length === 0 && !query.trim() && <p className="muted text-sm">None yet. Tap the magnifier to find one.</p>}
+      {chosen.length === 0 && !query.trim() && <p className="muted text-sm">{t("views.organizations.noneYet")}</p>}
       <div className="grid gap-2">
         {chosen.map((o) => (
           <div key={o.url} data-op={o.url} className={`op-line ${o.url === opened ? "op-on " : ""}flex flex-wrap items-center justify-between gap-2 text-sm`}>
             <span className="font-medium">{o.name}</span>
             <span className="flex flex-wrap items-center gap-2">
               <ProveAt operator={o.url} />
-              <button type="button" className="icon-btn icon-btn-sm" aria-label={`Remove ${o.name}`} title={`Remove ${o.name}`}
+              <button type="button" className="icon-btn icon-btn-sm" aria-label={t("views.organizations.remove", { name: o.name })} title={t("views.organizations.remove", { name: o.name })}
                 onClick={() => void onSave(chosen.filter((c) => c.url !== o.url))}>
                 <X size={14} aria-hidden />
               </button>

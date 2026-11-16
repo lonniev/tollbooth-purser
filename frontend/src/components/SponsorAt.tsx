@@ -6,12 +6,14 @@
 
 import { afterApproval, afterAsk, askSides, operatorClient, type PeerGrantResult } from "@tollbooth-dpyc/web";
 import { useAppShell } from "@tollbooth-dpyc/web/react";
+import { useT } from "../i18n";
 import { useCourier } from "../lib/useCourier";
 import { CourierWait } from "./Courier";
 
 export default function SponsorAt({ operator, operatorLabel, staff, name, onGranted }: {
   operator: string; operatorLabel: string; staff: string; name: string; onGranted: () => void;
 }) {
+  const t = useT();
   const { session } = useAppShell();
   const op = operatorClient(operator);
   const courier = useCourier("sponsor", operator, staff);
@@ -22,8 +24,8 @@ export default function SponsorAt({ operator, operatorLabel, staff, name, onGran
     const sent = { kind: "sent" as const, ...sides, other: staff, nonce: courier.pending.nonce };
     return (
       <CourierWait to={name} phrase={sent.nonce} busy={courier.busy} problem={courier.problem}
-        note={`I asked to sponsor your account at ${operatorLabel}. Please approve the DM marked "${sent.nonce}" in your Nostr app.`}
-        collectLabel="They approved" onCancel={courier.cancel}
+        note={t("ui.sponsorAt.note", { operator: operatorLabel, phrase: sent.nonce })}
+        collectLabel={t("ui.sponsorAt.theyApproved")} onCancel={courier.cancel}
         onCollect={() => void courier.collect(async () => {
           const r = await op.callTool<PeerGrantResult>("receive_peer_grant", { ...pair, nonce: sent.nonce }, { bestEffort: true });
           const step = afterApproval(sent, r);
@@ -34,7 +36,7 @@ export default function SponsorAt({ operator, operatorLabel, staff, name, onGran
   }
   return (
     <span className="flex flex-wrap items-center gap-2">
-      <span className="muted text-xs">Not sponsored here yet</span>
+      <span className="muted text-xs">{t("ui.sponsorAt.notYet")}</span>
       <button type="button" className="chip" disabled={courier.busy}
         onClick={() => void courier.send(async () => {
           const r = await op.callTool<PeerGrantResult>("request_peer_grant", pair, { bestEffort: true });
@@ -42,7 +44,7 @@ export default function SponsorAt({ operator, operatorLabel, staff, name, onGran
           if (step.phase.kind !== "sent") throw new Error(step.problem);
           return step.phase.nonce;
         })}>
-        Offer to sponsor
+        {t("ui.sponsorAt.offer")}
       </button>
       {courier.problem && <span className="error w-full text-xs">{courier.problem}</span>}
     </span>

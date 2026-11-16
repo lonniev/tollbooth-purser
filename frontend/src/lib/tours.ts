@@ -1,40 +1,54 @@
-/** The tours: the package's shared ones, and Purser's own pages. Each target is a `tourTarget` name on the page. */
+/**
+ * The tours: the package's shared ones, and Purser's own pages. Each target is
+ * a `tourTarget` name on the page. Built when shown, so the words follow the language.
+ */
 
 import { accountTour, signInTour, walletTour, type Tour } from "@tollbooth-dpyc/web";
+import { tr } from "../i18n/index.ts";
+import type { MessageKey } from "../i18n/en.ts";
 
-export const TOURS: Record<string, Tour> = {
-  signin: signInTour(),
-  wallet: walletTour(),
-  account: accountTour("account", [
-    { target: "account.sponsor", title: "You as a sponsor", says: "Your npub is what your people ask for at each Operator. Copy it, or the invitation, and send it to them." },
-    { target: "account.proven", title: "Where you are authenticated", says: "Each Operator your Organization uses, and whether this page acts as you there. Authenticate once at each." },
-    { target: "account.tutorial", title: "Live tutorial", says: "Turn the page tours on or off for this device." },
-  ]),
-  overview: { page: "overview", steps: [
-    { target: "overview.range", title: "The period", says: "Choose 7, 30 or 90 days. Each figure compares itself with the same span before it." },
-    { target: "overview.tiles", title: "The figures", says: "What you paid, what your people used, and how many days their balances last." },
-    { target: "overview.people", title: "Top people", says: "Who used the most api_sats in the period, across every Operator." },
-    { target: "overview.budgets", title: "Project budgets", says: "What each Project has funded this period, against its budget." },
-  ] },
-  people: { page: "people", steps: [
-    { target: "page.add", title: "Add a person", says: "Tap + and paste their npub with a label you choose." },
-    { target: "page.search", title: "Find a person", says: "Search by label, npub or Project." },
-    { target: "people.table", title: "Your people", says: "Tap a row to see their balance at each Operator, offer to sponsor them, or top them up." },
-    { target: "people.invite", title: "The invitation", says: "Tap the envelope to copy the invitation. Send it to your people, and each asks your npub to sponsor them at each Operator." },
-  ] },
-  projects: { page: "projects", steps: [
-    { target: "page.add", title: "New Project", says: "Tap + to name a budget and its period." },
-    { target: "page.search", title: "Find a Project", says: "Search by name, or by a person on it." },
-    { target: "projects.table", title: "Your Projects", says: "Each line shows the period's top-ups against its budget. Tap one to edit it or choose its people." },
-  ] },
-  ledger: { page: "ledger", steps: [
-    { target: "ledger.unbooked", title: "Assign to Project", says: "Settled top-ups still waiting for their Project. Choose it and assign each one." },
-    { target: "page.search", title: "Find a top-up", says: "Search by person, Project or Operator." },
-    { target: "ledger.csv", title: "For the books", says: "Download every top-up purchased as a CSV file for your bookkeeping." },
-  ] },
-  organizations: { page: "organizations", steps: [
-    { target: "orgs.table", title: "Your Organizations", says: "Each one, with its people, Projects and Operators. Tap a row to open it, and + to start another." },
-    { target: "page.search", title: "Find an Operator", says: "Search the registry by name or words, or paste an Operator's npub." },
-    { target: "orgs.operators", title: "Its Operators", says: "The Operators its people use. Authenticate at each once, so Purser can read and pay for your people there." },
-  ] },
-};
+/** A step whose title and words are `lib.tour.<name>.title` / `.says`. */
+const step = (target: string, name: string) => ({
+  target,
+  title: tr(`lib.tour.${name}.title` as MessageKey),
+  says: tr(`lib.tour.${name}.says` as MessageKey),
+});
+
+export function tours(): Record<string, Tour> {
+  return {
+    signin: signInTour(),
+    wallet: walletTour(),
+    account: accountTour("account", [
+      step("account.sponsor", "account.sponsor"),
+      step("account.proven", "account.proven"),
+      step("account.tutorial", "account.tutorial"),
+    ]),
+    overview: { page: "overview", steps: [
+      step("overview.range", "overview.range"),
+      step("overview.tiles", "overview.tiles"),
+      step("overview.people", "overview.people"),
+      step("overview.budgets", "overview.budgets"),
+    ] },
+    people: { page: "people", steps: [
+      step("page.add", "people.add"),
+      step("page.search", "people.search"),
+      step("people.table", "people.table"),
+      step("people.invite", "people.invite"),
+    ] },
+    projects: { page: "projects", steps: [
+      step("page.add", "projects.add"),
+      step("page.search", "projects.search"),
+      step("projects.table", "projects.table"),
+    ] },
+    ledger: { page: "ledger", steps: [
+      step("ledger.unbooked", "ledger.unbooked"),
+      step("page.search", "ledger.search"),
+      step("ledger.csv", "ledger.csv"),
+    ] },
+    organizations: { page: "organizations", steps: [
+      step("orgs.table", "organizations.table"),
+      step("page.search", "organizations.search"),
+      step("orgs.operators", "organizations.operators"),
+    ] },
+  };
+}

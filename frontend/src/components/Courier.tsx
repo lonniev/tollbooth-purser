@@ -6,11 +6,12 @@
  */
 
 import { CheckCircle2, Copy, Send, Smartphone } from "lucide-react";
-import type { ReactNode } from "react";
+import { Tx } from "@tollbooth-dpyc/web/react";
+import { useT, WORDS } from "../i18n";
 
 export function CourierWait({ to, phrase, note, busy, problem, collectLabel, onCollect, onCancel }: {
-  /** "you", or the person's name. */
-  to: ReactNode;
+  /** The person's name; none when the DM went to you. */
+  to?: string;
   phrase: string;
   /** A message to copy and send to them, when the DM is someone else's to approve. */
   note?: string;
@@ -20,24 +21,25 @@ export function CourierWait({ to, phrase, note, busy, problem, collectLabel, onC
   onCollect: () => void;
   onCancel: () => void;
 }) {
-  const self = to === "you";
+  const t = useT();
+  const self = to === undefined;
   return (
     <div className="courier" role="status" aria-live="polite">
       <ol className="courier-steps">
-        <li><Send size={14} aria-hidden /> A DM went to {to}</li>
-        <li><Smartphone size={14} aria-hidden /> {self ? "Open Pricing Studio or your Nostr app" : "They open their Nostr app"}</li>
-        <li><CheckCircle2 size={14} aria-hidden /> Approve the one marked <span className="phrase">{phrase}</span></li>
+        <li><Send size={14} aria-hidden /> {self ? t("ui.courier.wentToYou") : t("ui.courier.wentTo", { name: to })}</li>
+        <li><Smartphone size={14} aria-hidden /> {self ? t("ui.courier.openSelf") : t("ui.courier.openThey")}</li>
+        <li><CheckCircle2 size={14} aria-hidden /> <Tx ns={WORDS} k="ui.courier.approve" components={{ phrase: <span className="phrase">{phrase}</span> }} /></li>
       </ol>
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className="chip chip-accent" disabled={busy} onClick={onCollect}>
-          {busy ? "Looking…" : collectLabel}
+          {busy ? t("ui.courier.looking") : collectLabel}
         </button>
         {note && (
-          <button type="button" className="chip" onClick={() => void navigator.clipboard?.writeText(note)} title="Copy a note to send them">
-            <Copy size={14} aria-hidden /> Note for them
+          <button type="button" className="chip" onClick={() => void navigator.clipboard?.writeText(note)} title={t("ui.courier.noteTitle")}>
+            <Copy size={14} aria-hidden /> {t("ui.courier.note")}
           </button>
         )}
-        <button type="button" className="chip" disabled={busy} onClick={onCancel}>Cancel</button>
+        <button type="button" className="chip" disabled={busy} onClick={onCancel}>{t("ui.courier.cancel")}</button>
       </div>
       {problem && <p className="error text-xs">{problem}</p>}
     </div>

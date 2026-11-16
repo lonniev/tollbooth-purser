@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { configureTollbooth } from "@tollbooth-dpyc/web";
 import { ErrorBoundary } from "@tollbooth-dpyc/web/react";
 import App from "./App";
+import { registerPurser } from "./i18n";
 import "./index.css";
 
 configureTollbooth({
@@ -11,6 +12,9 @@ configureTollbooth({
   mcpUrl: import.meta.env.VITE_MCP_URL || "/mcp",
   operatorUrl: "https://purser-mcp.fastmcp.app",
 });
+
+// Purser's words; the package's AppShell starts the reader's language.
+void registerPurser();
 
 const crash = {
   root: "flex min-h-dvh flex-col items-center justify-center gap-4 p-6 text-center",

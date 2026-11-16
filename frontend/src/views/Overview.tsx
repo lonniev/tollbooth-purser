@@ -11,7 +11,8 @@ import {
   BudgetBars, DailyLines, FigureTile, HBars, OTHER, Panel, RankedList, SLOTS, StackedDaily, StatTile, sats, slotColor,
 } from "../components/Charts";
 import { operatorClient } from "@tollbooth-dpyc/web";
-import { tourTarget, useTour } from "@tollbooth-dpyc/web/react";
+import { Tx, tourTarget, useLanguageLocale, useTour } from "@tollbooth-dpyc/web/react";
+import { useT, WORDS } from "../i18n";
 import { HelpButton } from "../components/Controls";
 import Waiting from "../components/Waiting";
 import { OperatorLink, PersonLink } from "../components/EntityLink";
@@ -25,6 +26,8 @@ const RANGES = [7, 30, 90] as const;
 const BUDGETS_SHOWN = 8;
 
 export default function Overview() {
+  const t = useT();
+  const locale = useLanguageLocale();
   const { detail } = useOrg();
   const [days, setDays] = useState<(typeof RANGES)[number]>(30);
   const [read, setRead] = useState<Statement[]>([]);
@@ -79,10 +82,10 @@ export default function Overview() {
   if (!detail.members.length || !detail.operators.length) {
     return (
       <div className="card panel">
-        <p className="text-sm">Add the people you sponsor and the Operators they use, and their numbers show here.</p>
+        <p className="text-sm">{t("views.overview.empty")}</p>
         <div className="mt-3 flex gap-2">
-          <Link to="/people" className="chip chip-accent">People</Link>
-          <Link to="/organizations" className="chip">Operators</Link>
+          <Link to="/people" className="chip chip-accent">{t("views.overview.people")}</Link>
+          <Link to="/organizations" className="chip">{t("views.overview.operators")}</Link>
         </div>
       </div>
     );
@@ -91,7 +94,7 @@ export default function Overview() {
   const { kept, other } = foldSeries(o.operatorOrder, SLOTS);
   const opSeries = [
     ...kept.map((url, i) => ({ key: url, label: operatorName(detail, url), color: slotColor(i) })),
-    ...(other.length ? [{ key: "__other", label: "Other", color: OTHER }] : []),
+    ...(other.length ? [{ key: "__other", label: t("views.overview.other"), color: OTHER }] : []),
   ];
   const opData = o.usageByOperator.map(({ date, values }) => ({
     date,
@@ -104,85 +107,87 @@ export default function Overview() {
       <div className="flex flex-wrap items-center gap-2" {...tourTarget("overview.range")}>
         {RANGES.map((r) => (
           <button key={r} type="button" onClick={() => setDays(r)} aria-pressed={days === r} className={days === r ? "chip chip-on" : "chip"}>
-            {r} days
+            {t("views.overview.days", { count: r })}
           </button>
         ))}
         <span className="ml-auto flex items-center gap-2">
           <HelpButton page="overview" />
-          <button type="button" onClick={() => setTick((t) => t + 1)} disabled={loading} className="icon-btn" aria-label="Refresh" title="Read again">
+          <button type="button" onClick={() => setTick((t) => t + 1)} disabled={loading} className="icon-btn" aria-label={t("views.overview.refresh")} title={t("views.overview.readAgain")}>
             <RefreshCw size={16} aria-hidden className={loading ? "animate-spin" : ""} />
           </button>
         </span>
       </div>
 
       {problem && <p className="error">{problem}</p>}
-      {loading && read.length === 0 && <div className="card panel"><Waiting heading="Reading each account at each Operator…" /></div>}
+      {loading && read.length === 0 && <div className="card panel"><Waiting heading={t("views.overview.reading")} /></div>}
 
       <div className="tiles" {...tourTarget("overview.tiles")}>
-        <StatTile label="Funded (sats)" tile={o.funded} upIsGood={false} />
-        <StatTile label="Used (api_sats)" tile={o.used} upIsGood={false} />
-        <StatTile label="Calls" tile={o.calls} />
-        <StatTile label="api_sats per call" tile={o.satsPerCall} format={(n) => n.toFixed(1)} upIsGood={false} />
+        <StatTile label={t("views.overview.funded")} tile={o.funded} upIsGood={false} />
+        <StatTile label={t("views.overview.used")} tile={o.used} upIsGood={false} />
+        <StatTile label={t("views.overview.calls")} tile={o.calls} />
+        <StatTile label={t("views.overview.perCall")} tile={o.satsPerCall} format={(n) => n.toFixed(1)} upIsGood={false} />
         <FigureTile
-          label="Runway"
-          value={o.runway === null ? "—" : `${Math.floor(o.runway)} days`}
-          note={`${sats(o.balance)} api_sats on hand`}
+          label={t("views.overview.runway")}
+          value={o.runway === null ? "—" : t("views.overview.days", { count: Math.floor(o.runway) })}
+          note={t("views.overview.onHand", { sats: sats(o.balance) })}
         />
       </div>
 
       <div className="grid-2">
-        <Panel title="Top people" tour="overview.people" action={<Link to="/people" className="text-xs underline">People ›</Link>}>
-          <RankedList rows={o.topStaff} name={(k) => <PersonLink npub={k} />} unit="api_sats" empty="No use in this period." />
+        <Panel title={t("views.overview.topPeople")} tour="overview.people" action={<Link to="/people" className="text-xs underline">{t("views.overview.peopleMore")}</Link>}>
+          <RankedList rows={o.topStaff} name={(k) => <PersonLink npub={k} />} unit="api_sats" empty={t("views.overview.noUse")} />
         </Panel>
-        <Panel title="Top Operators" action={<Link to="/organizations" className="text-xs underline">Operators ›</Link>}>
-          <RankedList rows={o.topOperators} name={(k) => <OperatorLink url={k} />} unit="api_sats" empty="No use in this period." />
+        <Panel title={t("views.overview.topOperators")} action={<Link to="/organizations" className="text-xs underline">{t("views.overview.operatorsMore")}</Link>}>
+          <RankedList rows={o.topOperators} name={(k) => <OperatorLink url={k} />} unit="api_sats" empty={t("views.overview.noUse")} />
         </Panel>
       </div>
 
-      <Panel title="Usage by Operator">
+      <Panel title={t("views.overview.usageByOperator")}>
         <StackedDaily data={opData} series={opSeries} unit="api_sats" />
       </Panel>
 
       <div className="grid-2">
-        <Panel title="Calls by tool">
-          <HBars rows={o.callsByTool} unit="calls" empty="No calls in this period." href={(k) => operatorHref(splitToolKey(k).operator)}
+        <Panel title={t("views.overview.callsByTool")}>
+          <HBars rows={o.callsByTool} unit={t("views.overview.unitCalls")} empty={t("views.overview.noCalls")} href={(k) => operatorHref(splitToolKey(k).operator)}
             name={(k) => {
               const { operator, tool } = splitToolKey(k);
               const bare = bareTool(tool, prefixes[operator]);
               return detail.operators.length > 1 ? `${bare} · ${operatorName(detail, operator)}` : bare;
             }} />
         </Panel>
-        <Panel title="Credited and used, running total">
+        <Panel title={t("views.overview.creditedUsed")}>
           <DailyLines
             data={o.fundingVsUse}
             series={[
-              { key: "credited", label: "Credited", color: slotColor(0) },
-              { key: "used", label: "Used", color: slotColor(1) },
+              { key: "credited", label: t("views.overview.credited"), color: slotColor(0) },
+              { key: "used", label: t("views.overview.usedLine"), color: slotColor(1) },
             ]}
             unit="api_sats"
           />
         </Panel>
-        <Panel title="Expired (demurrage)">
-          <HBars rows={o.expiredByStaff} href={personHref} name={(k) => memberName(detail, k)} unit="api_sats" empty="Nothing has expired." />
+        <Panel title={t("views.overview.expired")}>
+          <HBars rows={o.expiredByStaff} href={personHref} name={(k) => memberName(detail, k)} unit="api_sats" empty={t("views.overview.nothingExpired")} />
         </Panel>
-        <Panel title="Project budgets, this period" tour="overview.budgets" action={<Link to="/projects" className="text-xs underline">{detail.projects.length > BUDGETS_SHOWN ? `All ${detail.projects.length} ›` : "Projects ›"}</Link>}>
+        <Panel title={t("views.overview.budgets")} tour="overview.budgets" action={<Link to="/projects" className="text-xs underline">{detail.projects.length > BUDGETS_SHOWN ? t("views.overview.allProjects", { n: detail.projects.length }) : t("views.overview.projectsMore")}</Link>}>
           <BudgetBars rows={burn} href={projectHref} />
         </Panel>
       </div>
 
       {missing.length > 0 && (
-        <Panel title="Not read">
+        <Panel title={t("views.overview.notRead")}>
           <details>
             <summary className="cursor-pointer text-sm">
-              {missing.length.toLocaleString("en-US")} {missing.length === 1 ? "account" : "accounts"} did not answer
+              {t("views.overview.notAnswered", { count: missing.length, n: missing.length.toLocaleString(locale) })}
             </summary>
             <p className="muted my-2 text-sm">
-              Either you have yet to authenticate at that Operator (Organizations), or the person has yet to ask you to sponsor them there (People).
+              {t("views.overview.notReadSays")}
             </p>
             <ul className="max-h-64 overflow-y-auto text-sm">
               {missing.map((m) => (
                 <li key={`${m.staff}|${m.operator}`}>
-                  <PersonLink npub={m.staff} /> at <OperatorLink url={m.operator} />: <span className="muted">{m.why}</span>
+                  <Tx ns={WORDS} k="views.overview.missingRow" components={{
+                    person: <PersonLink npub={m.staff} />, operator: <OperatorLink url={m.operator} />, why: <span className="muted">{m.why}</span>,
+                  }} />
                 </li>
               ))}
             </ul>

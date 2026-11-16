@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, X } from "lucide-react";
 import { searchMatcher } from "@tollbooth-dpyc/web";
+import { useT } from "../i18n";
 
 export interface Pickable {
   id: string;
@@ -28,6 +29,7 @@ export default function PickMany({ items, chosen, onToggle, label, busy = false,
   /** Where a chosen item's page is, so its chip opens it. */
   href?: (id: string) => string;
 }) {
+  const t = useT();
   const [query, setQuery] = useState("");
   const on = items.filter((i) => chosen.has(i.id));
   const hit = searchMatcher(query.trim());
@@ -37,17 +39,17 @@ export default function PickMany({ items, chosen, onToggle, label, busy = false,
   return (
     <div className="grid gap-2">
       <div className="flex flex-wrap gap-1.5">
-        {on.length === 0 && <span className="muted text-sm">None yet.</span>}
+        {on.length === 0 && <span className="muted text-sm">{t("ui.pickMany.none")}</span>}
         {on.map((i) => href ? (
           <span key={i.id} className="chip chip-on chip-split">
             <Link to={href(i.id)} className="chip-link">{i.label}</Link>
             <button type="button" className="chip-x" disabled={busy} onClick={() => onToggle(i.id, false)}
-              aria-label={`Take off ${i.label}`} title={`Take off ${i.label}`}>
+              aria-label={t("ui.pickMany.takeOff", { name: i.label })} title={t("ui.pickMany.takeOff", { name: i.label })}>
               <X size={13} aria-hidden />
             </button>
           </span>
         ) : (
-          <button key={i.id} type="button" className="chip chip-on" disabled={busy} onClick={() => onToggle(i.id, false)} aria-label={`Take off ${i.label}`}>
+          <button key={i.id} type="button" className="chip chip-on" disabled={busy} onClick={() => onToggle(i.id, false)} aria-label={t("ui.pickMany.takeOff", { name: i.label })}>
             {i.label} <X size={12} aria-hidden />
           </button>
         ))}
@@ -62,7 +64,7 @@ export default function PickMany({ items, chosen, onToggle, label, busy = false,
               <Plus size={12} aria-hidden /> {i.label}
             </button>
           ))}
-          {rest.length > offered.length && <span className="muted self-center text-xs">and {rest.length - offered.length} more</span>}
+          {rest.length > offered.length && <span className="muted self-center text-xs">{t("ui.pickMany.more", { count: rest.length - offered.length })}</span>}
         </div>
       )}
     </div>

@@ -6,12 +6,14 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { CircleHelp, Plus, Search, X } from "lucide-react";
-import { PageControls, tourTarget, useTourReplay } from "@tollbooth-dpyc/web/react";
+import { PageControls, tourTarget, useLanguageLocale, useTourReplay } from "@tollbooth-dpyc/web/react";
+import { useT } from "../i18n";
 
 export function AddButton({ open, onToggle, label }: { open: boolean; onToggle: () => void; label: string }) {
+  const t = useT();
   return (
-    <button type="button" className={open ? "fab fab-open" : "fab"} aria-expanded={open} aria-label={open ? "Close" : label}
-      title={open ? "Close" : label} onClick={onToggle} {...tourTarget("page.add")}>
+    <button type="button" className={open ? "fab fab-open" : "fab"} aria-expanded={open} aria-label={open ? t("ui.controls.close") : label}
+      title={open ? t("ui.controls.close") : label} onClick={onToggle} {...tourTarget("page.add")}>
       {open ? <X size={20} aria-hidden /> : <Plus size={22} aria-hidden />}
     </button>
   );
@@ -19,6 +21,7 @@ export function AddButton({ open, onToggle, label }: { open: boolean; onToggle: 
 
 /** A magnifier until tapped; then a field, which closes empty on Escape or ✕. */
 export function SearchButton({ value, onChange, label }: { value: string; onChange: (v: string) => void; label: string }) {
+  const t = useT();
   const [open, setOpen] = useState(Boolean(value));
   const field = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -41,7 +44,7 @@ export function SearchButton({ value, onChange, label }: { value: string; onChan
       <input ref={field} className="search-field" value={value} placeholder={label} aria-label={label}
         spellCheck={false} autoCapitalize="off" onChange={(e) => onChange(e.target.value)}
         onKeyDown={(e) => e.key === "Escape" && close()} />
-      <button type="button" className="icon-btn icon-btn-sm" aria-label="Close the search" onClick={close}>
+      <button type="button" className="icon-btn icon-btn-sm" aria-label={t("ui.controls.closeSearch")} onClick={close}>
         <X size={14} aria-hidden />
       </button>
     </span>
@@ -49,9 +52,10 @@ export function SearchButton({ value, onChange, label }: { value: string; onChan
 }
 
 export function HelpButton({ page }: { page: string }) {
+  const t = useT();
   const replay = useTourReplay();
   return (
-    <button type="button" className="icon-btn" aria-label="Show me on the page" title="Show me on the page" onClick={() => replay(page)}>
+    <button type="button" className="icon-btn" aria-label={t("ui.controls.showMe")} title={t("ui.controls.showMe")} onClick={() => replay(page)}>
       <CircleHelp size={18} aria-hidden />
     </button>
   );
@@ -59,11 +63,12 @@ export function HelpButton({ page }: { page: string }) {
 
 /** A list page's head: its title and count, then search, help and add, right-aligned. */
 export function Toolbar({ title, count, children }: { title: ReactNode; count?: number; children?: ReactNode }) {
+  const locale = useLanguageLocale();
   return (
     <div className="toolbar">
       <h2 className="panel-title">
         {title}
-        {count !== undefined && <span className="muted num ml-3 font-normal">({count.toLocaleString("en-US")})</span>}
+        {count !== undefined && <span className="muted num ml-3 font-normal">({count.toLocaleString(locale)})</span>}
       </h2>
       <div className="toolbar-actions">{children}</div>
     </div>

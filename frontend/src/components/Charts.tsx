@@ -10,14 +10,17 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
+import { languageLocale } from "@tollbooth-dpyc/web";
 import { change, type Ranked, type Tile } from "../lib/analytics";
+import { useT } from "../i18n";
 
 export const SLOTS = 8;
 export const slotColor = (i: number) => `var(--series-${i + 1})`;
 export const OTHER = "var(--series-other)";
 
-export const sats = (n: number) => Math.round(n).toLocaleString("en-US");
-const short = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
+/** A whole number of sats, grouped in the reader's locale. */
+export const sats = (n: number) => Math.round(n).toLocaleString(languageLocale());
+const short = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString(languageLocale(), { month: "short", day: "numeric", timeZone: "UTC" });
 
 const axis = { stroke: "var(--chart-axis)", tick: { fill: "var(--chart-muted)", fontSize: 11 }, tickLine: false };
 
@@ -39,6 +42,7 @@ function Tip({ active, payload, label, unit }: { active?: boolean; payload?: { n
 export function StatTile({ label, tile, format = sats, upIsGood = true }: {
   label: string; tile: Tile; format?: (n: number) => string; upIsGood?: boolean;
 }) {
+  const t = useT();
   const delta = change(tile.value, tile.prior);
   const good = delta !== null && (delta >= 0) === upIsGood;
   return (
@@ -55,7 +59,7 @@ export function StatTile({ label, tile, format = sats, upIsGood = true }: {
         </div>
       </div>
       <span className={`tile-delta ${delta === null ? "muted" : good ? "delta-up" : "delta-down"}`}>
-        {delta === null ? "new this period" : `${delta >= 0 ? "↑" : "↓"} ${Math.abs(delta * 100).toFixed(1)}% vs prior period`}
+        {delta === null ? t("ui.charts.newThisPeriod") : t("ui.charts.vsPrior", { arrow: delta >= 0 ? "↑" : "↓", pct: Math.abs(delta * 100).toFixed(1) })}
       </span>
     </div>
   );
@@ -212,19 +216,20 @@ export function BudgetMeter({ funded, budget }: { funded: number; budget: number
 }
 
 export function BudgetBars({ rows, href }: { rows: { id: string; key: string; funded: number; budget: number }[]; href?: (id: string) => string }) {
-  if (!rows.length) return <p className="muted text-sm">No Projects yet.</p>;
+  const t = useT();
+  if (!rows.length) return <p className="muted text-sm">{t("ui.charts.noProjects")}</p>;
   return (
     <div className="grid gap-3">
       {rows.map((r) => {
         const over = r.budget > 0 && r.funded > r.budget;
         return (
-          <div key={r.id} title={`${r.key}: ${sats(r.funded)} of ${sats(r.budget)} sats`}>
+          <div key={r.id} title={t("ui.charts.budgetTitle", { name: r.key, funded: sats(r.funded), budget: sats(r.budget) })}>
             <div className="flex justify-between text-sm">
               <span className="truncate">{href ? <Link to={href(r.id)} className="ent">{r.key}</Link> : r.key}</span>
-              <span className="num">{sats(r.funded)} <span className="muted">/ {r.budget ? sats(r.budget) : "no budget"}</span></span>
+              <span className="num">{sats(r.funded)} <span className="muted">/ {r.budget ? sats(r.budget) : t("ui.charts.noBudget")}</span></span>
             </div>
             <div className="mt-1"><BudgetMeter funded={r.funded} budget={r.budget} /></div>
-            {over && <p className="error mt-1 text-xs">Over budget by {sats(r.funded - r.budget)} sats</p>}
+            {over && <p className="error mt-1 text-xs">{t("ui.charts.overBy", { sats: sats(r.funded - r.budget) })}</p>}
           </div>
         );
       })}
