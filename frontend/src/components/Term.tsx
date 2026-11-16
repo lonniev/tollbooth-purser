@@ -7,10 +7,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Info } from "lucide-react";
+import type { ReactNode } from "react";
+import { useT } from "../i18n";
 import { define } from "../lib/glossary";
 
-export default function Term({ of, label }: { of: string; label?: string }) {
+/** `label`, or the words inside (as `<Tx>` draws a tag), names it; the glossary's own term otherwise. */
+export default function Term({ of, label, children }: { of: string; label?: string; children?: ReactNode }) {
+  const t = useT();
   const entry = define(of);
+  const shown = children ?? label;
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLSpanElement>(null);
   const lifted = useRef(false);
@@ -29,20 +34,20 @@ export default function Term({ of, label }: { of: string; label?: string }) {
     };
   }, [open]);
 
-  if (!entry) return <>{label}</>;
+  if (!entry) return <>{shown}</>;
   return (
     <span ref={box} className="relative inline-block">
       <button type="button" aria-expanded={open} className="term"
         onPointerUp={() => { lifted.current = true; setOpen((o) => !o); }}
         onClick={() => { if (!lifted.current) setOpen((o) => !o); lifted.current = false; }}>
-        {label ?? entry.term}
+        {shown ?? entry.term}
         <Info size={13} aria-hidden className="term-i" />
       </button>
       {open && (
         <span role="note" className="site-menu left-0 block w-72 p-3 text-left text-sm font-normal">
           {entry.said}
           <Link to={`/guide?term=${encodeURIComponent(entry.key)}`} className="mt-2 block text-xs underline" onClick={() => setOpen(false)}>
-            All the terms ›
+            {t("ui.term.all")}
           </Link>
         </span>
       )}

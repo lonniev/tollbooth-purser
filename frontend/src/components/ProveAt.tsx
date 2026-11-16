@@ -7,10 +7,12 @@ import { useEffect, useState } from "react";
 import { CheckCircle2, KeyRound } from "lucide-react";
 import { operatorClient } from "@tollbooth-dpyc/web";
 import { useAppShell } from "@tollbooth-dpyc/web/react";
+import { useT } from "../i18n";
 import { useCourier } from "../lib/useCourier";
 import { CourierWait } from "./Courier";
 
 export default function ProveAt({ operator, onProven }: { operator: string; onProven?: () => void }) {
+  const t = useT();
   const { session } = useAppShell();
   const client = operatorClient(operator);
   const courier = useCourier("prove", operator, session.npub);
@@ -28,14 +30,14 @@ export default function ProveAt({ operator, onProven }: { operator: string; onPr
   if (proven) {
     return (
       <span className="flex items-center gap-1 text-xs" style={{ color: "var(--tb-ok)" }}>
-        <CheckCircle2 size={14} aria-hidden /> Authenticated
+        <CheckCircle2 size={14} aria-hidden /> {t("ui.proveAt.authenticated")}
       </span>
     );
   }
   if (courier.pending) {
     return (
-      <CourierWait to="you" phrase={courier.pending.nonce} busy={courier.busy} problem={courier.problem}
-        collectLabel="I approved" onCancel={courier.cancel}
+      <CourierWait phrase={courier.pending.nonce} busy={courier.busy} problem={courier.problem}
+        collectLabel={t("ui.proveAt.approved")} onCancel={courier.cancel}
         onCollect={() => void courier.collect(async (nonce) => {
           await client.proveFinish(session.npub, nonce);
           setProven(true);
@@ -47,7 +49,7 @@ export default function ProveAt({ operator, onProven }: { operator: string; onPr
     <span className="flex flex-wrap items-center gap-2">
       <button type="button" className="chip chip-accent" disabled={courier.busy}
         onClick={() => void courier.send(() => client.proveStart(session.npub, "Purser reads and funds your people here"))}>
-        <KeyRound size={14} aria-hidden /> Authenticate here
+        <KeyRound size={14} aria-hidden /> {t("ui.proveAt.authenticateHere")}
       </button>
       {courier.problem && <span className="error w-full text-xs">{courier.problem}</span>}
     </span>

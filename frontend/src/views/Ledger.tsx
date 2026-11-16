@@ -7,7 +7,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Download } from "lucide-react";
 import { filterRows, pageRows } from "@tollbooth-dpyc/web";
-import { tourTarget, useTour } from "@tollbooth-dpyc/web/react";
+import { Tx, tourTarget, useLanguageLocale, useTour } from "@tollbooth-dpyc/web/react";
+import { useT, WORDS } from "../i18n";
 import { sats } from "../components/Charts";
 import { HelpButton, Paging, SearchButton, Toolbar } from "../components/Controls";
 import Term from "../components/Term";
@@ -24,6 +25,8 @@ const PAGE = 50;
 const LOOKBACK_DAYS = 90;
 
 export default function Ledger() {
+  const t = useT();
+  const locale = useLanguageLocale();
   const { detail } = useOrg();
   const [rows, setRows] = useState<Funding[] | null>(null);
   const [loose, setLoose] = useState<Unbooked[]>([]);
@@ -81,8 +84,10 @@ export default function Ledger() {
     <div className="grid gap-3">
     {loose.length > 0 && (
       <section className="card panel" {...tourTarget("ledger.unbooked")}>
-        <Toolbar title="Assign to Project" count={loose.length} />
-        <p className="muted mb-2 text-sm">Settled top-ups at your Operators still waiting for their <Term of="project" label="Project" />. Assign the ones your Organization paid.</p>
+        <Toolbar title={t("views.ledger.assign")} count={loose.length} />
+        <p className="muted mb-2 text-sm">
+          <Tx ns={WORDS} k="views.ledger.assignSays" components={{ project: <Term of="project" /> }} />
+        </p>
         <div className="grid gap-2">
           {loose.map((u) => (
             <BookRow key={`${u.operator}|${u.invoice_id}`} item={u} onBooked={() => void load()} />
@@ -91,8 +96,8 @@ export default function Ledger() {
       </section>
     )}
     <section className="card panel">
-      <Toolbar title={<Term of="funding" label="Top-ups Purchased" />} count={rows?.length}>
-        <SearchButton value={query} onChange={setQuery} label="Find by person, Project or Operator" />
+      <Toolbar title={<Term of="funding" label={t("views.ledger.purchased")} />} count={rows?.length}>
+        <SearchButton value={query} onChange={setQuery} label={t("views.ledger.find")} />
         <HelpButton page="ledger" />
         <button type="button" className="chip" disabled={!rows?.length} onClick={download} {...tourTarget("ledger.csv")}>
           <Download size={14} aria-hidden /> CSV
@@ -100,21 +105,24 @@ export default function Ledger() {
       </Toolbar>
       {problem && <p className="error">{problem}</p>}
       {rows === null ? (
-        <Waiting heading="Reading the books at your Operators…" />
+        <Waiting heading={t("views.ledger.reading")} />
       ) : rows.length === 0 ? (
-        <p className="muted text-sm">No top-ups purchased yet. A top-up from People lands here.</p>
+        <p className="muted text-sm">{t("views.ledger.none")}</p>
       ) : shown.length === 0 ? (
-        <p className="muted text-sm">No top-up matches that.</p>
+        <p className="muted text-sm">{t("views.ledger.noMatch")}</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="ledger">
             <thead>
-              <tr><th>Paid</th><th>Project</th><th>Person</th><th>Operator</th><th className="text-right">Sats</th></tr>
+              <tr>
+                <th>{t("views.ledger.col.paid")}</th><th>{t("views.ledger.col.project")}</th><th>{t("views.ledger.col.person")}</th>
+                <th>{t("views.ledger.col.operator")}</th><th className="text-right">{t("views.ledger.col.sats")}</th>
+              </tr>
             </thead>
             <tbody>
               {pageRows(shown, page, PAGE).map((f) => (
                 <tr key={f.funding_id}>
-                  <td className="num">{new Date(f.paid_at * 1000).toLocaleDateString()}</td>
+                  <td className="num">{new Date(f.paid_at * 1000).toLocaleDateString(locale)}</td>
                   <td><ProjectLink id={f.project_id} /></td>
                   <td><PersonLink npub={f.staff_npub} /></td>
                   <td><OperatorLink url={f.operator_url} /></td>
@@ -148,6 +156,8 @@ async function bookIntended(detail: OrgDetail, loose: Unbooked[]): Promise<Unboo
 }
 
 function BookRow({ item, onBooked }: { item: Unbooked; onBooked: () => void }) {
+  const t = useT();
+  const locale = useLanguageLocale();
   const { detail } = useOrg();
   const eligible = detail?.projects.filter((p) => p.staff.includes(item.staff)) ?? [];
   const [project, setProject] = useState(eligible[0]?.project_id ?? "");
@@ -174,19 +184,19 @@ function BookRow({ item, onBooked }: { item: Unbooked; onBooked: () => void }) {
   return (
     <div className="flex flex-wrap items-center gap-2 border-t pt-2 text-sm" style={{ borderColor: "var(--tb-line)" }}>
       <span className="flex-1">
-        <PersonLink npub={item.staff} /> at <OperatorLink url={item.operator} />
-        <span className="muted"> · {item.paid_at ? new Date(item.paid_at * 1000).toLocaleDateString() : "—"}</span>
+        <Tx ns={WORDS} k="views.ledger.at" components={{ person: <PersonLink npub={item.staff} />, operator: <OperatorLink url={item.operator} /> }} />
+        <span className="muted"> · {item.paid_at ? new Date(item.paid_at * 1000).toLocaleDateString(locale) : "—"}</span>
       </span>
-      <span className="num">{sats(item.sats)} sats</span>
+      <span className="num">{t("views.ledger.sats", { sats: sats(item.sats) })}</span>
       {eligible.length ? (
         <>
-          <select className="field" value={project} onChange={(e) => setProject(e.target.value)} aria-label="Project">
+          <select className="field" value={project} onChange={(e) => setProject(e.target.value)} aria-label={t("views.ledger.col.project")}>
             {eligible.map((p) => <option key={p.project_id} value={p.project_id}>{p.name}</option>)}
           </select>
-          <button type="button" className="chip chip-accent" disabled={busy || !project} onClick={() => void book()}>Assign</button>
+          <button type="button" className="chip chip-accent" disabled={busy || !project} onClick={() => void book()}>{t("views.ledger.assignOne")}</button>
         </>
       ) : (
-        <span className="muted text-xs">Put them on a Project first</span>
+        <span className="muted text-xs">{t("views.ledger.needProject")}</span>
       )}
       {problem && <span className="error w-full text-xs">{problem}</span>}
     </div>

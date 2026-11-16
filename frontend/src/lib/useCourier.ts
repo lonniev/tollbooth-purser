@@ -4,6 +4,7 @@
  */
 
 import { useCallback, useState } from "react";
+import { tr } from "../i18n/index.ts";
 import { forgetPending, pendingFor, rememberPending, type Pending, type PendingKind } from "./pending";
 
 export function useCourier(kind: PendingKind, operator: string, npub: string) {
@@ -26,7 +27,7 @@ export function useCourier(kind: PendingKind, operator: string, npub: string) {
   /** `start` sends the DM and answers its phrase. */
   const send = (start: () => Promise<string>) => run(async () => {
     const nonce = await start();
-    if (!nonce) throw new Error("The Operator sent no DM.");
+    if (!nonce) throw new Error(tr("lib.useCourier.noDm"));
     const p = { kind, operator, npub, nonce, sentAt: Date.now() };
     rememberPending(p);
     setPending(p);

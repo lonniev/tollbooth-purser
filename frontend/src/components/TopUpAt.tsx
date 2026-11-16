@@ -10,6 +10,7 @@ import { operatorClient, type CheckPaymentResult, type PurchaseCreditsResult } f
 import type { Project } from "../lib/purser";
 import { forgetIntent, rememberIntent } from "../lib/intents";
 import { recordFunding } from "../lib/purser";
+import { useT } from "../i18n";
 import { sats } from "./Charts";
 
 const AMOUNTS = [1_000, 5_000, 25_000];
@@ -25,6 +26,7 @@ type Phase =
 export default function TopUpAt({ orgId, operator, staff, projects, onDone }: {
   orgId: string; operator: string; staff: string; projects: Project[]; onDone: () => void;
 }) {
+  const t = useT();
   const eligible = projects.filter((p) => p.staff.includes(staff));
   const [amount, setAmount] = useState(AMOUNTS[0]);
   const [project, setProject] = useState(eligible[0]?.project_id ?? "");
@@ -39,7 +41,7 @@ export default function TopUpAt({ orgId, operator, staff, projects, onDone }: {
     setPhase({ kind: "creating" });
     try {
       const r = await op.callTool<PurchaseCreditsResult>("purchase_credits", { npub: staff, amount_sats: amount }, { bestEffort: true });
-      if (!r.success || !r.invoice_id) throw new Error(r.error ?? "The Operator made no invoice.");
+      if (!r.success || !r.invoice_id) throw new Error(r.error ?? t("ui.topUpAt.noInvoice"));
       rememberIntent(operator, r.invoice_id, project);
       setPhase({ kind: "awaiting", invoice: { ...r, invoice_id: r.invoice_id }, checks: 0 });
     } catch (e) {
@@ -50,7 +52,7 @@ export default function TopUpAt({ orgId, operator, staff, projects, onDone }: {
 
   useEffect(() => {
     if (phase.kind !== "awaiting" || phase.checks >= MAX_CHECKS) return;
-    const t = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       const now = latest.current;
       if (now.kind !== "awaiting") return;
       try {
@@ -64,7 +66,7 @@ export default function TopUpAt({ orgId, operator, staff, projects, onDone }: {
           setPhase({ kind: "settled", credited: r.credits_granted ?? 0 });
           onDone();
         } else if (r.status === "Expired" || r.status === "Invalid") {
-          setProblem(`The invoice is ${r.status.toLowerCase()}.`);
+          setProblem(t(r.status === "Expired" ? "ui.topUpAt.expired" : "ui.topUpAt.invalid"));
           setPhase({ kind: "idle" });
         } else {
           setPhase({ ...now, checks: now.checks + 1 });
@@ -74,26 +76,26 @@ export default function TopUpAt({ orgId, operator, staff, projects, onDone }: {
         setPhase({ ...now, checks: now.checks + 1 });
       }
     }, POLL_MS);
-    return () => clearTimeout(t);
-  }, [phase, op, staff, orgId, project, operator, amount, onDone]);
+    return () => clearTimeout(timer);
+  }, [phase, op, staff, orgId, project, operator, amount, onDone, t]);
 
   if (!eligible.length) {
-    return <p className="muted text-sm">Put them on a Project first: every top-up is assigned to one.</p>;
+    return <p className="muted text-sm">{t("ui.topUpAt.needProject")}</p>;
   }
 
   if (phase.kind === "awaiting") {
     const bolt11 = phase.invoice.lightning_invoice ?? phase.invoice.payment_request;
     return (
       <div className="grid gap-2 text-sm">
-        <p>Invoice for {sats(phase.invoice.amount_sats ?? amount)} sats. Pay it from your wallet.</p>
+        <p>{t("ui.topUpAt.invoiceFor", { sats: sats(phase.invoice.amount_sats ?? amount) })}</p>
         <div className="flex flex-wrap gap-2">
-          {bolt11 && <a href={`lightning:${bolt11}`} className="chip chip-accent">Open in wallet</a>}
-          {bolt11 && <button type="button" className="chip" onClick={() => void navigator.clipboard?.writeText(bolt11)}>Copy invoice</button>}
-          {phase.invoice.checkout_link && <a href={phase.invoice.checkout_link} target="_blank" rel="noreferrer" className="chip">Open checkout</a>}
-          <button type="button" className="chip" onClick={() => setPhase({ kind: "idle" })}>Cancel</button>
+          {bolt11 && <a href={`lightning:${bolt11}`} className="chip chip-accent">{t("ui.topUpAt.openWallet")}</a>}
+          {bolt11 && <button type="button" className="chip" onClick={() => void navigator.clipboard?.writeText(bolt11)}>{t("ui.topUpAt.copyInvoice")}</button>}
+          {phase.invoice.checkout_link && <a href={phase.invoice.checkout_link} target="_blank" rel="noreferrer" className="chip">{t("ui.topUpAt.openCheckout")}</a>}
+          <button type="button" className="chip" onClick={() => setPhase({ kind: "idle" })}>{t("ui.topUpAt.cancel")}</button>
         </div>
         <p className="muted" aria-live="polite">
-          {phase.checks < MAX_CHECKS ? "Waiting for payment…" : "Still unpaid. It is assigned once it settles and you look again."}
+          {phase.checks < MAX_CHECKS ? t("ui.topUpAt.waiting") : t("ui.topUpAt.stillUnpaid")}
         </p>
       </div>
     );
@@ -101,18 +103,18 @@ export default function TopUpAt({ orgId, operator, staff, projects, onDone }: {
 
   return (
     <div className="grid gap-2 text-sm">
-      {phase.kind === "settled" && <p style={{ color: "var(--tb-ok)" }}>Paid. {sats(phase.credited)} api_sats credited.</p>}
+      {phase.kind === "settled" && <p style={{ color: "var(--tb-ok)" }}>{t("ui.topUpAt.paid", { sats: sats(phase.credited) })}</p>}
       <div className="flex flex-wrap items-center gap-2">
         {AMOUNTS.map((a) => (
           <button key={a} type="button" onClick={() => setAmount(a)} aria-pressed={amount === a} className={amount === a ? "chip chip-on" : "chip"}>
             {sats(a)}
           </button>
         ))}
-        <select className="field" value={project} onChange={(e) => setProject(e.target.value)} aria-label="Project">
+        <select className="field" value={project} onChange={(e) => setProject(e.target.value)} aria-label={t("ui.topUpAt.project")}>
           {eligible.map((p) => <option key={p.project_id} value={p.project_id}>{p.name}</option>)}
         </select>
         <button type="button" onClick={() => void create()} disabled={phase.kind === "creating"} className="chip chip-accent">
-          {phase.kind === "creating" ? "Making invoice…" : "Top up"}
+          {phase.kind === "creating" ? t("ui.topUpAt.making") : t("ui.topUpAt.topUp")}
         </button>
       </div>
       {problem && <p className="error">{problem}</p>}

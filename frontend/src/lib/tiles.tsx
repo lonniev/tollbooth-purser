@@ -2,16 +2,18 @@
 
 import { Banknote, Coins, HandCoins, ScrollText, Vault } from "lucide-react";
 import type { DecorateTile } from "@tollbooth-dpyc/web/react";
+import { tr } from "../i18n/index.ts";
+import type { MessageKey } from "../i18n/en.ts";
 
-const LOOKS: Record<number, { name: string; Mark: typeof Coins }> = {
-  100: { name: "Doubloon", Mark: Coins },
-  500: { name: "Purse", Mark: HandCoins },
-  1_000: { name: "Wages", Mark: Banknote },
-  5_000: { name: "Payroll", Mark: ScrollText },
-  25_000: { name: "Strongbox", Mark: Vault },
+const LOOKS: Record<number, { name: MessageKey; Mark: typeof Coins }> = {
+  100: { name: "lib.tiles.doubloon", Mark: Coins },
+  500: { name: "lib.tiles.purse", Mark: HandCoins },
+  1_000: { name: "lib.tiles.wages", Mark: Banknote },
+  5_000: { name: "lib.tiles.payroll", Mark: ScrollText },
+  25_000: { name: "lib.tiles.strongbox", Mark: Vault },
 };
 
 export const decorateTile: DecorateTile = (sats) => {
   const look = LOOKS[sats];
-  return look && { name: look.name, mark: <look.Mark size={18} aria-hidden /> };
+  return look && { name: tr(look.name), mark: <look.Mark size={18} aria-hidden /> };
 };

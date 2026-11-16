@@ -10,7 +10,8 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronRight, Coins, Copy, Hourglass, Mail, UserMinus, UserPlus } from "lucide-react";
 import { filterRows, pageRows, searchMatcher, type CheckBalanceResult, type SortDir } from "@tollbooth-dpyc/web";
-import { SortHeader, TableShell, tourTarget, useAppShell, useTour } from "@tollbooth-dpyc/web/react";
+import { SortHeader, TableShell, Tx, tourTarget, useAppShell, useLanguageLocale, useTour } from "@tollbooth-dpyc/web/react";
+import { useT, WORDS } from "../i18n";
 import { AddButton, HelpButton, Paging, SearchButton, Toolbar } from "../components/Controls";
 import PickMany from "../components/PickMany";
 import ProveAt from "../components/ProveAt";
@@ -72,6 +73,7 @@ function lastTopUps(fundings: Funding[]): Map<string, Funding> {
 }
 
 export default function People() {
+  const t = useT();
   const { detail, reload } = useOrg();
   const { session } = useAppShell();
   const [params] = useSearchParams();
@@ -132,32 +134,34 @@ export default function People() {
 
   return (
     <section className="card panel">
-      <Toolbar title="People" count={detail.members.length}>
-        <SearchButton value={query} onChange={setQuery} label="Find by label, npub or Project" />
+      <Toolbar title={t("views.people.title")} count={detail.members.length}>
+        <SearchButton value={query} onChange={setQuery} label={t("views.people.find")} />
         <button type="button" className="icon-btn" onClick={() => void copyInvite()} {...tourTarget("people.invite")}
-          aria-label="Copy the invitation" title={copied ? "Copied" : "Copy the invitation"}>
+          aria-label={t("views.people.copyInvite")} title={copied ? t("views.people.copied") : t("views.people.copyInvite")}>
           <Mail size={18} aria-hidden />
         </button>
         <HelpButton page="people" />
-        <AddButton open={adding} onToggle={() => setAdding(!adding)} label="Add a person" />
+        <AddButton open={adding} onToggle={() => setAdding(!adding)} label={t("views.people.add")} />
       </Toolbar>
-      {copied && <p className="muted mb-2 text-right text-sm" role="status">The invitation is copied. <Link to="/guide#invite" className="underline">How it works ›</Link></p>}
+      {copied && <p className="muted mb-2 text-right text-sm" role="status">
+        <Tx ns={WORDS} k="views.people.copiedSays" components={{ how: <Link to="/guide#invite" className="underline" /> }} />
+      </p>}
       {adding && <AddPerson orgId={detail.organization.org_id} onAdded={async () => { setAdding(false); await reload(); }} />}
 
       {detail.members.length === 0 ? (
         <p className="muted text-sm">
-          Nobody yet. Tap + to add the first person you pay for, or send them the invitation (✉). <Link to="/guide#invite" className="underline">How it works ›</Link>
+          <Tx ns={WORDS} k="views.people.none" components={{ how: <Link to="/guide#invite" className="underline" /> }} />
         </p>
       ) : shown.length === 0 ? (
-        <p className="muted text-sm">Nobody matches that.</p>
+        <p className="muted text-sm">{t("views.people.noMatch")}</p>
       ) : (
         <div {...tourTarget("people.table")}>
           <TableShell classNames={{ root: "overflow-x-auto", table: "ledger rows" }}>
             <thead>
               <tr>
-                {header("Person", "name")}
-                {header("Projects", "projects")}
-                {header("Waiting", "waiting", true)}
+                {header(t("views.people.col.person"), "name")}
+                {header(t("views.people.col.projects"), "projects")}
+                {header(t("views.people.col.waiting"), "waiting", true)}
               </tr>
             </thead>
             <tbody>
@@ -178,7 +182,7 @@ export default function People() {
                       <td><ProjectLinks projects={r.projects} /></td>
                       <td className="text-right">
                         {r.waiting > 0 && (
-                          <span className="badge" title="Sponsorship offers waiting on their approval">
+                          <span className="badge" title={t("views.people.waitingTitle")}>
                             <Hourglass size={12} aria-hidden /> {r.waiting}
                           </span>
                         )}
@@ -223,6 +227,7 @@ function ProjectLinks({ projects }: { projects: Project[] }) {
 
 /** The npub and a label: a person is added in one line. */
 function AddPerson({ orgId, onAdded }: { orgId: string; onAdded: () => Promise<void> }) {
+  const t = useT();
   const [npub, setNpub] = useState("");
   const [label, setLabel] = useState("");
   const [busy, setBusy] = useState(false);
@@ -246,18 +251,18 @@ function AddPerson({ orgId, onAdded }: { orgId: string; onAdded: () => Promise<v
 
   return (
     <form className="add-form" onSubmit={(e) => { e.preventDefault(); if (ready) void add(); }}>
-      <input className="field flex-1" placeholder="Their npub1…" value={npub} onChange={(e) => setNpub(e.target.value)} spellCheck={false} autoCapitalize="off" aria-label="Their npub" autoFocus />
-      <input className="field" placeholder="Label, e.g. Sam (field)" value={label} onChange={(e) => setLabel(e.target.value)} aria-label="Label" />
+      <input className="field flex-1" placeholder={t("views.people.npubPlaceholder")} value={npub} onChange={(e) => setNpub(e.target.value)} spellCheck={false} autoCapitalize="off" aria-label={t("views.people.npub")} autoFocus />
+      <input className="field" placeholder={t("views.people.labelPlaceholder")} value={label} onChange={(e) => setLabel(e.target.value)} aria-label={t("views.people.label")} />
       <button type="submit" className="chip chip-accent" disabled={busy || !ready}>
-        <UserPlus size={14} aria-hidden /> Add
+        <UserPlus size={14} aria-hidden /> {t("views.people.addOne")}
       </button>
-      {npub.trim() && !npub.trim().startsWith("npub1") && <p className="error w-full text-sm">An npub starts with npub1.</p>}
+      {npub.trim() && !npub.trim().startsWith("npub1") && <p className="error w-full text-sm">{t("views.people.npubStarts")}</p>}
       {problem && <p className="error w-full">{problem}</p>}
     </form>
   );
 }
 
-const shortDate = (seconds: number) => new Date(seconds * 1000).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+const shortDate = (seconds: number, locale: string) => new Date(seconds * 1000).toLocaleDateString(locale, { month: "short", day: "numeric", year: "numeric" });
 
 /** One person, open: who they are, their balance at each Operator, their Projects, and taking them out. */
 function MemberDetail({ member, last, onChanged, onRemoved }: {
@@ -266,6 +271,8 @@ function MemberDetail({ member, last, onChanged, onRemoved }: {
   onChanged: () => Promise<void>;
   onRemoved: () => Promise<void>;
 }) {
+  const t = useT();
+  const locale = useLanguageLocale();
   const { detail } = useOrg();
   const { session } = useAppShell();
   const [balances, setBalances] = useState<Record<string, Reading<CheckBalanceResult> | undefined>>({});
@@ -309,9 +316,7 @@ function MemberDetail({ member, last, onChanged, onRemoved }: {
   }
 
   async function remove() {
-    const sure = window.confirm(
-      `Remove ${member.label} from ${orgName}?\n\nThey come off every Project here. Past top-ups stay in the Ledger. Your sponsorship at each Operator stays until either of you stops it there.`,
-    );
+    const sure = window.confirm(t("views.people.removeConfirm", { name: member.label, org: orgName }));
     if (!sure) return;
     await removeMember(orgId, member.staff_npub);
     await onRemoved();
@@ -320,10 +325,10 @@ function MemberDetail({ member, last, onChanged, onRemoved }: {
   return (
     <div className="member grid gap-4 py-1">
       <div className="member-who">
-        <span className="muted text-sm">Their npub, the same at every Operator</span>
+        <span className="muted text-sm">{t("views.people.theirNpub")}</span>
         <span className="flex items-center justify-end gap-2">
           <span className="break-all font-mono text-sm">{member.staff_npub}</span>
-          <button type="button" className="icon-btn icon-btn-sm" aria-label="Copy their npub" title="Copy their npub"
+          <button type="button" className="icon-btn icon-btn-sm" aria-label={t("views.people.copyNpub")} title={t("views.people.copyNpub")}
             onClick={() => void navigator.clipboard?.writeText(member.staff_npub)}>
             <Copy size={14} aria-hidden />
           </button>
@@ -332,12 +337,12 @@ function MemberDetail({ member, last, onChanged, onRemoved }: {
 
       <section className="grid gap-2">
         <div className="member-head">
-          <h3 className="member-title">Balance at <Term of="operator" label="Operators" /></h3>
+          <h3 className="member-title"><Tx ns={WORDS} k="views.people.balanceAt" components={{ operators: <Term of="operator" /> }} /></h3>
           {detail.operators.length > OPERATORS_UNFILTERED && (
-            <input className="field" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Find an Operator" aria-label="Find an Operator" />
+            <input className="field" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={t("views.people.findOperator")} aria-label={t("views.people.findOperator")} />
           )}
         </div>
-        {detail.operators.length === 0 && <p className="muted text-sm">Add the Operators your people use in <Link to="/organizations" className="underline">Organizations</Link>.</p>}
+        {detail.operators.length === 0 && <p className="muted text-sm"><Tx ns={WORDS} k="views.people.noOperators" components={{ orgs: <Link to="/organizations" className="underline" /> }} /></p>}
         <div className="acct-list">
           {operators.map((o) => {
             const b = balances[o.url];
@@ -347,7 +352,9 @@ function MemberDetail({ member, last, onChanged, onRemoved }: {
               <div key={o.url} className="acct-row">
                 <span className="acct-name"><OperatorLink url={o.url} /></span>
                 <span className="acct-last muted text-sm">
-                  {paid ? <>Last top-up <span className="num">{sats(paid.sats)}</span> sats · {shortDate(paid.paid_at)}</> : "No top-up yet"}
+                  {paid
+                    ? <Tx ns={WORDS} k="views.people.lastTopUp" vars={{ date: shortDate(paid.paid_at, locale) }} components={{ sats: <span className="num">{sats(paid.sats)}</span> }} />
+                    : t("views.people.noTopUp")}
                 </span>
                 <span className="acct-act">
                   {b === undefined ? (
@@ -359,7 +366,7 @@ function MemberDetail({ member, last, onChanged, onRemoved }: {
                       <span className="num">{sats(b.value.balance_api_sats ?? 0)} <span className="muted text-sm">api_sats</span></span>
                       <button type="button" className={topUp === o.url ? "chip chip-money chip-money-on" : "chip chip-money"}
                         aria-expanded={topUp === o.url} onClick={() => setTopUp(topUp === o.url ? "" : o.url)}>
-                        <Coins size={16} aria-hidden /> Top up
+                        <Coins size={16} aria-hidden /> {t("views.people.topUp")}
                       </button>
                     </>
                   ) : (
@@ -380,20 +387,16 @@ function MemberDetail({ member, last, onChanged, onRemoved }: {
       </section>
 
       <section className="grid gap-2">
-        <h3 className="member-title"><Term of="project" label="Projects" /> they are on</h3>
-        <PickMany label="Put them on a Project…" busy={busy} chosen={onProjects} href={projectHref}
+        <h3 className="member-title"><Tx ns={WORDS} k="views.people.projectsOn" components={{ projects: <Term of="project" /> }} /></h3>
+        <PickMany label={t("views.people.putOnProject")} busy={busy} chosen={onProjects} href={projectHref}
           items={detail.projects.map((p) => ({ id: p.project_id, label: p.name }))}
           onToggle={(id, on) => void act(() => assignMember(orgId, id, member.staff_npub, on))} />
       </section>
 
       <section className="member-leave">
-        <p className="muted text-sm">
-          Removing {member.label} takes them off every Project in {orgName}.
-          Past top-ups stay in the Ledger.
-          Your sponsorship at each Operator stays until either of you stops it there.
-        </p>
+        <p className="muted text-sm">{t("views.people.removeSays", { name: member.label, org: orgName })}</p>
         <button type="button" className="chip chip-danger" onClick={() => void remove()}>
-          <UserMinus size={14} aria-hidden /> Remove from {orgName}
+          <UserMinus size={14} aria-hidden /> {t("views.people.removeFrom", { org: orgName })}
         </button>
       </section>
       {problem && <p className="error">{problem}</p>}

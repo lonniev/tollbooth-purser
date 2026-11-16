@@ -7,8 +7,9 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronRight, Plus } from "lucide-react";
-import { filterRows, pageRows, type SortDir } from "@tollbooth-dpyc/web";
+import { filterRows, languageLocale, pageRows, type SortDir } from "@tollbooth-dpyc/web";
 import { SortHeader, TableShell, tourTarget, useTour } from "@tollbooth-dpyc/web/react";
+import { useT, type Translate } from "../i18n";
 import { BudgetMeter, sats } from "../components/Charts";
 import { AddButton, HelpButton, Paging, SearchButton, Toolbar } from "../components/Controls";
 import PickMany from "../components/PickMany";
@@ -23,13 +24,14 @@ const PAGE = 20;
 const SORT = { cell: "", button: "sort-btn", active: "sort-on", arrow: "muted" };
 const SORT_RIGHT = { ...SORT, cell: "text-right" };
 const MAX_PURPOSE = 280;
-const periodLabel = (p: Project["period"]) => (p === "none" ? "in all" : `per ${p}`);
+const periodLabel = (t: Translate, p: Project["period"]) => t(`views.projects.period.${p}`);
 
 /** When a Project's funded figure starts counting: the start of its current period. */
-function fundedSince(period: Project["period"], today: Date): string {
+function fundedSince(t: Translate, period: Project["period"], today: Date): string {
   const start = periodStart(period, today);
-  if (!start) return "in all";
-  return `since ${new Date(start * 1000).toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" })}`;
+  if (!start) return t("views.projects.period.none");
+  const date = new Date(start * 1000).toLocaleDateString(languageLocale(), { month: "short", day: "numeric", timeZone: "UTC" });
+  return t("views.projects.since", { date });
 }
 
 interface Row extends Project {
@@ -45,6 +47,7 @@ const BY: Record<string, (a: Row, b: Row) => number> = {
 };
 
 export default function Projects() {
+  const t = useT();
   const { detail, reload } = useOrg();
   const [fundings, setFundings] = useState<Funding[]>([]);
   const [query, setQuery] = useState("");
@@ -113,10 +116,10 @@ export default function Projects() {
 
   return (
     <section className="card panel">
-      <Toolbar title={<Term of="project" label="Projects" />} count={detail.projects.length}>
-        <SearchButton value={query} onChange={setQuery} label="Find by name or person" />
+      <Toolbar title={<Term of="project" label={t("views.projects.title")} />} count={detail.projects.length}>
+        <SearchButton value={query} onChange={setQuery} label={t("views.projects.find")} />
         <HelpButton page="projects" />
-        <AddButton open={adding} onToggle={() => setAdding(!adding)} label="New Project" />
+        <AddButton open={adding} onToggle={() => setAdding(!adding)} label={t("views.projects.new")} />
       </Toolbar>
       {adding && (
         <ProjectForm onSave={(p) => act(async () => { await saveProject(orgId, p); setAdding(false); })} />
@@ -124,20 +127,18 @@ export default function Projects() {
       {problem && <p className="error mb-2">{problem}</p>}
 
       {detail.projects.length === 0 ? (
-        <p className="muted text-sm">
-          No Projects yet. Each top-up is assigned to one. Tap + to make one.
-        </p>
+        <p className="muted text-sm">{t("views.projects.none")}</p>
       ) : shown.length === 0 ? (
-        <p className="muted text-sm">No Project matches that.</p>
+        <p className="muted text-sm">{t("views.projects.noMatch")}</p>
       ) : (
         <div {...tourTarget("projects.table")}>
           <TableShell classNames={{ root: "overflow-x-auto", table: "ledger rows" }}>
             <thead>
               <tr>
-                {header("Project", "name", "asc", false)}
-                {header("Funded", "funded")}
-                {header("Budget", "budget")}
-                {header("People", "people")}
+                {header(t("views.projects.col.project"), "name", "asc", false)}
+                {header(t("views.projects.col.funded"), "funded")}
+                {header(t("views.projects.col.budget"), "budget")}
+                {header(t("views.projects.col.people"), "people")}
               </tr>
             </thead>
             <tbody>
@@ -154,11 +155,11 @@ export default function Projects() {
                         {r.purpose && <span className="muted mt-0.5 block pl-6 text-sm">{r.purpose}</span>}
                       </td>
                       <td className="min-w-44 text-right">
-                        <span className="num">{sats(r.funded)}</span> <span className="muted text-sm">{fundedSince(r.period, new Date())}</span>
+                        <span className="num">{sats(r.funded)}</span> <span className="muted text-sm">{fundedSince(t, r.period, new Date())}</span>
                         <BudgetMeter funded={r.funded} budget={r.budget_sats} />
                       </td>
                       <td className="num text-right">
-                        {r.budget_sats ? sats(r.budget_sats) : "—"} <span className="muted text-sm">{periodLabel(r.period)}</span>
+                        {r.budget_sats ? sats(r.budget_sats) : "—"} <span className="muted text-sm">{periodLabel(t, r.period)}</span>
                       </td>
                       <td className="num text-right">{r.staff.length}</td>
                     </tr>
@@ -168,11 +169,11 @@ export default function Projects() {
                           <div className="grid gap-3 py-1">
                             <ProjectForm project={r} onSave={(p) => act(() => saveProject(orgId, { ...p, project_id: r.project_id }))} />
                             <div className="grid gap-2">
-                              <h3 className="member-title">People on it</h3>
-                              <PickMany label="Add a person…" chosen={new Set(r.staff)} href={personHref}
+                              <h3 className="member-title">{t("views.projects.peopleOn")}</h3>
+                              <PickMany label={t("views.projects.addPerson")} chosen={new Set(r.staff)} href={personHref}
                                 items={detail.members.map((m) => ({ id: m.staff_npub, label: m.label, also: m.staff_npub }))}
                                 onToggle={(npub, on) => void act(() => assignMember(orgId, r.project_id, npub, on))} />
-                              {!detail.members.length && <p className="muted text-sm">Add people first, on People.</p>}
+                              {!detail.members.length && <p className="muted text-sm">{t("views.projects.addPeopleFirst")}</p>}
                             </div>
                           </div>
                         </td>
@@ -194,6 +195,7 @@ function ProjectForm({ project, onSave }: {
   project?: Project;
   onSave: (p: { name: string; budget_sats: number; period: Project["period"]; purpose: string }) => Promise<void>;
 }) {
+  const t = useT();
   const [name, setName] = useState(project?.name ?? "");
   const [budget, setBudget] = useState(project ? String(project.budget_sats) : "");
   const [period, setPeriod] = useState<Project["period"]>(project?.period ?? "month");
@@ -211,16 +213,16 @@ function ProjectForm({ project, onSave }: {
       setBusy(true);
       void onSave({ name: name.trim(), budget_sats: amount, period, purpose: purpose.trim() }).finally(() => setBusy(false));
     }}>
-      <input className="field flex-1" placeholder="Name, e.g. Fall Grounds Crew" value={name} onChange={(e) => setName(e.target.value)} aria-label="Project name" autoFocus={!project} />
-      <input className="field w-32" inputMode="numeric" placeholder="Budget, sats" value={budget}
-        onChange={(e) => setBudget(e.target.value.replace(/[^\d]/g, ""))} aria-label="Budget in sats" />
-      <select className="field" value={period} onChange={(e) => setPeriod(e.target.value as Project["period"])} aria-label="Period">
-        {PERIODS.map((p) => <option key={p} value={p}>{periodLabel(p)}</option>)}
+      <input className="field flex-1" placeholder={t("views.projects.namePlaceholder")} value={name} onChange={(e) => setName(e.target.value)} aria-label={t("views.projects.name")} autoFocus={!project} />
+      <input className="field w-32" inputMode="numeric" placeholder={t("views.projects.budgetPlaceholder")} value={budget}
+        onChange={(e) => setBudget(e.target.value.replace(/[^\d]/g, ""))} aria-label={t("views.projects.budget")} />
+      <select className="field" value={period} onChange={(e) => setPeriod(e.target.value as Project["period"])} aria-label={t("views.projects.period")}>
+        {PERIODS.map((p) => <option key={p} value={p}>{periodLabel(t, p)}</option>)}
       </select>
       <textarea className="field w-full" rows={2} maxLength={MAX_PURPOSE} value={purpose} onChange={(e) => setPurpose(e.target.value)}
-        placeholder="Why it exists, e.g. Clears the fall grounds before frost" aria-label="Why this Project exists" />
+        placeholder={t("views.projects.purposePlaceholder")} aria-label={t("views.projects.purpose")} />
       <button type="submit" className="chip chip-accent ml-auto" disabled={busy || !valid || !changed}>
-        {project ? "Save" : <><Plus size={14} aria-hidden /> Create</>}
+        {project ? t("views.projects.save") : <><Plus size={14} aria-hidden /> {t("views.projects.create")}</>}
       </button>
     </form>
   );

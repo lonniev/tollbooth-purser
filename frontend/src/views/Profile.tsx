@@ -7,7 +7,8 @@
 import { inviteText } from "../lib/invite";
 import { Link } from "react-router-dom";
 import { Copy } from "lucide-react";
-import { AccountPage, tourTarget, useAppShell, useTour } from "@tollbooth-dpyc/web/react";
+import { AccountPage, LanguageChooser, Tx, tourTarget, useAppShell, useTour } from "@tollbooth-dpyc/web/react";
+import { useT, WORDS } from "../i18n";
 import ProveAt from "../components/ProveAt";
 import Term from "../components/Term";
 import TutorialSwitch from "../components/TutorialSwitch";
@@ -48,25 +49,33 @@ function CopyRow({ text, label }: { text: string; label: string }) {
 }
 
 function AsSponsor({ npub }: { npub: string }) {
+  const t = useT();
   const invite = inviteText(npub);
   return (
     <section className="card panel grid gap-2" {...tourTarget("account.sponsor")}>
-      <h2 className="panel-title">You as a sponsor</h2>
-      <p className="muted text-sm">Your people ask this <Term of="npub" /> to be their <Term of="sponsor" label="sponsor" /> at each Operator.</p>
-      <CopyRow text={npub} label="Copy your npub" />
-      <CopyRow text={invite} label="Copy the invitation" />
+      <h2 className="panel-title">{t("views.profile.asSponsor")}</h2>
+      <p className="muted text-sm">
+        <Tx ns={WORDS} k="views.profile.asSponsorSays" components={{ npub: <Term of="npub" />, sponsor: <Term of="sponsor" /> }} />
+      </p>
+      <CopyRow text={npub} label={t("views.profile.copyNpub")} />
+      <CopyRow text={invite} label={t("views.profile.copyInvite")} />
     </section>
   );
 }
 
 function ProvenAt() {
+  const t = useT();
   const { detail } = useOrg();
   return (
     <section className="card panel" {...tourTarget("account.proven")}>
-      <h2 className="panel-title mb-1">Where you are authenticated</h2>
-      <p className="muted mb-2 text-sm">This page acts as you at each Operator where you <Term of="prove" label="authenticated" />, so it can read and pay for your people there.</p>
+      <h2 className="panel-title mb-1">{t("views.profile.proven")}</h2>
+      <p className="muted mb-2 text-sm">
+        <Tx ns={WORDS} k="views.profile.provenSays" components={{ prove: <Term of="prove" /> }} />
+      </p>
       {!detail?.operators.length ? (
-        <p className="muted text-sm">No Operators yet. <Link to="/organizations" className="underline">Add them in Organizations</Link>.</p>
+        <p className="muted text-sm">
+          <Tx ns={WORDS} k="views.profile.noOperators" components={{ add: <Link to="/organizations" className="underline" /> }} />
+        </p>
       ) : (
         <div className="grid gap-2">
           {detail.operators.map((o) => (
@@ -83,6 +92,7 @@ function ProvenAt() {
 
 export default function Profile() {
   useTour("account");
+  const t = useT();
   const { session, status } = useAppShell();
   return (
     <div className="page">
@@ -96,7 +106,10 @@ export default function Profile() {
             <ProvenAt />
           </>
         }
-        between={{ theme: <section className="card panel"><h2 className="panel-title mb-2">Tutorial</h2><TutorialSwitch /></section> }}
+        between={{
+          timezone: <section className="card panel"><h2 className="panel-title mb-2">{t("views.profile.language")}</h2><LanguageChooser /></section>,
+          theme: <section className="card panel"><h2 className="panel-title mb-2">{t("views.profile.tutorial")}</h2><TutorialSwitch /></section>,
+        }}
         usage={{ classNames: USAGE }}
         theme={{ classNames: { chip: "chip", active: "chip chip-on" } }}
         timezone={{ classNames: { select: "field" } }}

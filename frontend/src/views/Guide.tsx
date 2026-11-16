@@ -3,35 +3,45 @@
  * anyone: a visitor reads it before signing in.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Copy, Building2, FolderKanban, Handshake, KeyRound, ReceiptText, Zap } from "lucide-react";
-import { useAppShell, useTourReplay } from "@tollbooth-dpyc/web/react";
+import { Tx, useAppShell, useTourReplay } from "@tollbooth-dpyc/web/react";
+import { useT, WORDS } from "../i18n";
+import type { MessageKey } from "../i18n/en";
 import { SearchButton, Toolbar } from "../components/Controls";
 import Term from "../components/Term";
-import { GROUPS, define, searchGlossary } from "../lib/glossary";
+import { define, glossaryGroups, searchGlossary } from "../lib/glossary";
 import TutorialSwitch from "../components/TutorialSwitch";
 import { inviteText } from "../lib/invite";
 
-const STEPS = [
-  { icon: <Building2 size={18} aria-hidden />, title: "Create your Organization", says: <>Sign in with your <Term of="npub" />. Your npub owns the <Term of="organization" label="Organization" />.</> },
-  { icon: <KeyRound size={18} aria-hidden />, title: "Choose your Operators", says: <>Find each <Term of="operator" label="Operator" /> your people use, and <Term of="prove" label="authenticate" /> there once by DM.</> },
-  { icon: <Handshake size={18} aria-hidden />, title: "Sponsor your people", says: <>Add each person by npub. They ask you to be their <Term of="sponsor" label="sponsor" />, or you offer, and the other approves a <Term of="courier" label="DM" />.</> },
-  { icon: <FolderKanban size={18} aria-hidden />, title: "Set your budgets", says: <>Make a <Term of="project" label="Project" /> for each budget, and put your people on it.</> },
-  { icon: <Zap size={18} aria-hidden />, title: "Top them up", says: <>Pay a person's <Term of="topup" label="top-up" /> from your own Lightning wallet. Purser assigns it to their Project.</> },
-  { icon: <ReceiptText size={18} aria-hidden />, title: "Watch the sats", says: <>The Overview shows who used what, where, and your <Term of="runway" label="runway" />. The Ledger keeps the books.</> },
+/** Each step's words are `views.guide.step.<id>.title` / `.says`; each tag in `says` is a defined word. */
+const STEPS: { id: string; icon: ReactNode; title: MessageKey; terms: Record<string, ReactElement> }[] = [
+  { id: "org", icon: <Building2 size={18} aria-hidden />, title: "views.guide.step.org.title",
+    terms: { npub: <Term of="npub" />, org: <Term of="organization" /> } },
+  { id: "operators", icon: <KeyRound size={18} aria-hidden />, title: "views.guide.step.operators.title",
+    terms: { operator: <Term of="operator" />, prove: <Term of="prove" /> } },
+  { id: "sponsor", icon: <Handshake size={18} aria-hidden />, title: "views.guide.step.sponsor.title",
+    terms: { sponsor: <Term of="sponsor" />, courier: <Term of="courier" /> } },
+  { id: "budgets", icon: <FolderKanban size={18} aria-hidden />, title: "views.guide.step.budgets.title",
+    terms: { project: <Term of="project" /> } },
+  { id: "topup", icon: <Zap size={18} aria-hidden />, title: "views.guide.step.topup.title",
+    terms: { topup: <Term of="topup" /> } },
+  { id: "watch", icon: <ReceiptText size={18} aria-hidden />, title: "views.guide.step.watch.title",
+    terms: { runway: <Term of="runway" /> } },
 ];
 
-const TOURS = [
-  { page: "overview", href: "/overview", label: "Overview" },
-  { page: "people", href: "/people", label: "People" },
-  { page: "projects", href: "/projects", label: "Projects" },
-  { page: "ledger", href: "/ledger", label: "Ledger" },
-  { page: "organizations", href: "/organizations", label: "Organizations" },
-  { page: "account", href: "/profile", label: "Profile" },
+const TOURS: { page: string; href: string; label: MessageKey }[] = [
+  { page: "overview", href: "/overview", label: "ui.app.nav.overview" },
+  { page: "people", href: "/people", label: "ui.app.nav.people" },
+  { page: "projects", href: "/projects", label: "ui.app.nav.projects" },
+  { page: "ledger", href: "/ledger", label: "ui.app.nav.ledger" },
+  { page: "organizations", href: "/organizations", label: "ui.app.nav.organizations" },
+  { page: "account", href: "/profile", label: "views.guide.profile" },
 ];
 
 export default function Guide() {
+  const t = useT();
   const { session } = useAppShell();
   const replay = useTourReplay();
   const go = useNavigate();
@@ -42,7 +52,9 @@ export default function Guide() {
   const terms = useRef<HTMLElement>(null);
   useEffect(() => {
     if (asked) terms.current?.scrollIntoView({ block: "start" });
-  }, [asked]);
+    // A term's key is stable; its entry is read afresh each render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asked?.key]);
   const { hash } = useLocation();
   useEffect(() => {
     if (hash) document.getElementById(hash.slice(1))?.scrollIntoView({ block: "start" });
@@ -51,15 +63,15 @@ export default function Guide() {
   return (
     <div className="page grid gap-3">
       <section className="card panel">
-        <h1 className="mb-1 text-xl font-semibold">How Purser works</h1>
-        <p className="muted mb-3 text-sm">You pay for the people you sponsor at each Tollbooth DPYC™ Operator they use. They keep their own keys and accounts.</p>
+        <h1 className="mb-1 text-xl font-semibold">{t("views.guide.title")}</h1>
+        <p className="muted mb-3 text-sm">{t("views.guide.intro")}</p>
         <ol className="steps">
           {STEPS.map((s, i) => (
-            <li key={s.title} className="step">
+            <li key={s.id} className="step">
               <span className="step-mark">{s.icon}<span className="num">{i + 1}</span></span>
               <span>
-                <span className="block font-medium">{s.title}</span>
-                <span className="muted text-sm">{s.says}</span>
+                <span className="block font-medium">{t(s.title)}</span>
+                <span className="muted text-sm"><Tx ns={WORDS} k={`views.guide.step.${s.id}.says`} components={s.terms} /></span>
               </span>
             </li>
           ))}
@@ -67,19 +79,19 @@ export default function Guide() {
       </section>
 
       <section className="card panel" id="invite">
-        <Toolbar title="Invite your people">
+        <Toolbar title={t("views.guide.invite")}>
           {session.signedIn && (
             <button type="button" className="chip" onClick={() => void navigator.clipboard?.writeText(inviteText(session.npub ?? ""))}>
-              <Copy size={14} aria-hidden /> Copy
+              <Copy size={14} aria-hidden /> {t("views.guide.copy")}
             </button>
           )}
         </Toolbar>
         <ol className="grid list-decimal gap-1 pl-5 text-sm">
-          <li>Send each person the invitation: tap ✉ on People, or Copy here.</li>
-          <li>In their account at each <Term of="operator" label="Operator" /> they use, they ask your npub to be their <Term of="sponsor" label="sponsor" />.</li>
-          <li>Your Nostr app asks you to approve, and their balance there shows on People.</li>
+          <li>{t("views.guide.invite1")}</li>
+          <li><Tx ns={WORDS} k="views.guide.invite2" components={{ operator: <Term of="operator" />, sponsor: <Term of="sponsor" /> }} /></li>
+          <li>{t("views.guide.invite3")}</li>
         </ol>
-        <p className="muted mt-2 text-sm">You may offer instead: open their row on People and tap Offer to sponsor at an Operator.</p>
+        <p className="muted mt-2 text-sm">{t("views.guide.offerInstead")}</p>
         {session.signedIn && (
           <p className="mt-2 rounded-lg p-2 text-sm" style={{ background: "var(--tb-surface-2)" }}>{inviteText(session.npub ?? "")}</p>
         )}
@@ -87,11 +99,11 @@ export default function Guide() {
 
       {session.signedIn && (
         <section className="card panel">
-          <Toolbar title="Show me on the page" />
-          <p className="muted mb-2 text-sm">A short walk around a page, pointing at each control.</p>
+          <Toolbar title={t("ui.controls.showMe")} />
+          <p className="muted mb-2 text-sm">{t("views.guide.showMeSays")}</p>
           <div className="flex flex-wrap gap-2">
-            {TOURS.map((t) => (
-              <button key={t.page} type="button" className="chip" onClick={() => { replay(t.page); go(t.href); }}>{t.label}</button>
+            {TOURS.map((tour) => (
+              <button key={tour.page} type="button" className="chip" onClick={() => { replay(tour.page); go(tour.href); }}>{t(tour.label)}</button>
             ))}
           </div>
           <div className="mt-3"><TutorialSwitch /></div>
@@ -99,12 +111,12 @@ export default function Guide() {
       )}
 
       <section className="card panel" id="terms" ref={terms}>
-        <Toolbar title="Terms">
-          <SearchButton value={query} onChange={setQuery} label="Search the words" />
+        <Toolbar title={t("views.guide.terms")}>
+          <SearchButton value={query} onChange={setQuery} label={t("views.guide.searchTerms")} />
         </Toolbar>
-        {hits.length === 0 && <p className="muted text-sm">No term matches that.</p>}
+        {hits.length === 0 && <p className="muted text-sm">{t("views.guide.noTerm")}</p>}
         <div className="grid gap-4">
-          {GROUPS.map((g) => {
+          {glossaryGroups().map((g) => {
             const entries = hits.filter((e) => e.group === g.id);
             if (!entries.length) return null;
             return (

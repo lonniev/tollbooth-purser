@@ -10,6 +10,7 @@
 import { callTool, operatorClient, type AccountStatementResult, type CheckBalanceResult } from "@tollbooth-dpyc/web";
 import type { Funding, Statement } from "./analytics.ts";
 import { mapLimit } from "./limit.ts";
+import { tr } from "../i18n/index.ts";
 
 /** How many accounts are read at once: steady for the browser and kind to the Operators. */
 const READS_AT_ONCE = 6;
@@ -56,7 +57,7 @@ interface Answer {
 /** A Purser answer, or its error raised. */
 async function purser<T extends Answer>(tool: string, args: Record<string, unknown> = {}): Promise<T> {
   const r = await callTool<T>(tool, args);
-  if (r.ok !== true) throw new Error(r.error ?? `${tool} failed.`);
+  if (r.ok !== true) throw new Error(r.error ?? tr("lib.purser.failed", { tool }));
   return r;
 }
 
@@ -147,7 +148,7 @@ async function read<T extends { success?: boolean; error?: string }>(
 ): Promise<Reading<T>> {
   try {
     const r = await operatorClient(operator).callTool<T>(tool, args, { bestEffort: true });
-    return r.success === false ? { ok: false, why: r.error ?? "refused" } : { ok: true, value: r };
+    return r.success === false ? { ok: false, why: r.error ?? tr("lib.purser.refused") } : { ok: true, value: r };
   } catch (e) {
     return { ok: false, why: (e as Error).message };
   }
