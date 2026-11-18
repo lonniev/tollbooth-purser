@@ -1,1 +1,0 @@
-- Pages use the width the screen gives them: the page grows to 90rem (it stopped at 72rem), and the home card and the sign-in card no longer stop partway across.

@@ -1,1 +1,0 @@
-- The Setup page lists the Operators again: the Oracle was refusing the call because the web package added an npub to it (tollbooth-web 3.5.2).

@@ -1,1 +1,0 @@
-- Adding a person on People takes an npub field: checked as typed, shown as a chiclet with their Nostr name, picture and NIP-05.

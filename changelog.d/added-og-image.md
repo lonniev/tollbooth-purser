@@ -1,1 +1,0 @@
-- A link to the site previews with a share image: the dashboard for a sample organization over the ship at payday (`og:image`, 1200×630).
