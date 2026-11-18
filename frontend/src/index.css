@@ -115,7 +115,7 @@ body {
   background: var(--backdrop-dim);
 }
 
-.page { width: 100%; max-width: 72rem; margin: 0 auto; padding: 1rem; }
+.page { width: 100%; max-width: 90rem; margin: 0 auto; padding: 1rem; }
 .card { background: var(--tb-surface); border: 1px solid var(--tb-line); border-radius: 0.75rem; }
 .site-bar { background: var(--tb-surface); border-bottom: 1px solid var(--tb-line); }
 .muted { color: var(--tb-muted); }
