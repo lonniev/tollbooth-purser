@@ -17,4 +17,6 @@ permissions:
 jobs:
   verify:
     uses: lonniev/dpyc-community/.github/workflows/deploy-verify.yml@main
+    with:
+      service_url: https://purser-mcp.fastmcp.app/mcp
     secrets: inherit
