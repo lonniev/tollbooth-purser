@@ -391,7 +391,6 @@ const words: Translation = {
   "views.people.labelPlaceholder": "标签，例如：小山（外勤）",
   "views.people.label": "标签",
   "views.people.addOne": "添加",
-  "views.people.npubStarts": "npub 以 npub1 开头。",
   "views.people.removeConfirm": "要把 {{name}} 从 {{org}} 移除吗？\n\n对方会离开这里的每个项目。过去的充值留在账本里。你在每个运营方的赞助关系会一直保留，直到你们任何一方在那里结束它。",
   "views.people.theirNpub": "对方的 npub，在每个运营方都一样",
   "views.people.copyNpub": "复制对方的 npub",

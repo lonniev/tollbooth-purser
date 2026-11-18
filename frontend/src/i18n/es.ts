@@ -395,7 +395,6 @@ const words: Translation = {
   "views.people.labelPlaceholder": "Etiqueta, p. ej. Sam (campo)",
   "views.people.label": "Etiqueta",
   "views.people.addOne": "Agregar",
-  "views.people.npubStarts": "Un npub empieza con npub1.",
   "views.people.removeConfirm": "¿Quitar a {{name}} de {{org}}?\n\nSale de todos los Proyectos de aquí. Las recargas pasadas quedan en el Libro mayor. Tu patrocinio en cada Operador sigue hasta que cualquiera de los dos lo termine ahí.",
   "views.people.theirNpub": "Su npub, el mismo en todos los Operadores",
   "views.people.copyNpub": "Copiar su npub",

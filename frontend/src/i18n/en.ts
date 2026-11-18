@@ -418,7 +418,6 @@ export const en = {
   "views.people.labelPlaceholder": "Label, e.g. Sam (field)",
   "views.people.label": "Label",
   "views.people.addOne": "Add",
-  "views.people.npubStarts": "An npub starts with npub1.",
   // A confirmation dialog; {{name}} is the person, {{org}} the Organization. Keep the blank line.
   "views.people.removeConfirm": "Remove {{name}} from {{org}}?\n\nThey come off every Project here. Past top-ups stay in the Ledger. Your sponsorship at each Operator stays until either of you stops it there.",
   "views.people.theirNpub": "Their npub, the same at every Operator",
