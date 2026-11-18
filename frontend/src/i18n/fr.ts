@@ -394,7 +394,6 @@ const words: Translation = {
   "views.people.labelPlaceholder": "Nom, p. ex. Sam (terrain)",
   "views.people.label": "Nom",
   "views.people.addOne": "Ajouter",
-  "views.people.npubStarts": "Un npub commence par npub1.",
   "views.people.removeConfirm": "Retirer {{name}} de {{org}} ?\n\nLa personne est retirée de tous les Projets ici. Les recharges passées restent dans le Registre. Ton parrainage chez chaque Opérateur reste en place jusqu'à ce que l'un de vous y mette fin là-bas.",
   "views.people.theirNpub": "Son npub, le même chez chaque Opérateur",
   "views.people.copyNpub": "Copier son npub",

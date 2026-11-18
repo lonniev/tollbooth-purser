@@ -378,7 +378,6 @@ const words: Translation = {
   "views.people.labelPlaceholder": "ラベル (例: 佐藤 (現場))",
   "views.people.label": "ラベル",
   "views.people.addOne": "追加",
-  "views.people.npubStarts": "npub は npub1 で始まります。",
   "views.people.removeConfirm": "{{org}} から {{name}} を外しますか？\n\nここのすべてのプロジェクトから外れます。過去のチャージは台帳に残ります。各オペレーターでのスポンサー契約は、どちらかがそこで終了するまで続きます。",
   "views.people.theirNpub": "相手の npub (どのオペレーターでも同じ)",
   "views.people.copyNpub": "相手の npub をコピー",

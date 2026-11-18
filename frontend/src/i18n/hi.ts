@@ -391,7 +391,6 @@ const words: Translation = {
   "views.people.labelPlaceholder": "लेबल, जैसे Sam (फ़ील्ड)",
   "views.people.label": "लेबल",
   "views.people.addOne": "जोड़ें",
-  "views.people.npubStarts": "npub, npub1 से शुरू होता है।",
   "views.people.removeConfirm": "{{name}} को {{org}} से हटाएँ?\n\nवे यहाँ के हर प्रोजेक्ट से हट जाएँगे। पुराने टॉप अप बही-खाते में रहेंगे। हर Operator पर आपकी स्पॉन्सरशिप तब तक रहेगी जब तक आप में से कोई उसे वहाँ बंद न करे।",
   "views.people.theirNpub": "उनका npub, हर Operator पर एक ही",
   "views.people.copyNpub": "उनका npub कॉपी करें",

@@ -10,7 +10,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronRight, Coins, Copy, Hourglass, Mail, UserMinus, UserPlus } from "lucide-react";
 import { filterRows, pageRows, searchMatcher, type CheckBalanceResult, type SortDir } from "@tollbooth-dpyc/web";
-import { SortHeader, TableShell, Tx, tourTarget, useAppShell, useLanguageLocale, useTour } from "@tollbooth-dpyc/web/react";
+import { NpubField, SortHeader, TableShell, Tx, tourTarget, useAppShell, useLanguageLocale, useTour } from "@tollbooth-dpyc/web/react";
 import { useT, WORDS } from "../i18n";
 import { AddButton, HelpButton, Paging, SearchButton, Toolbar } from "../components/Controls";
 import PickMany from "../components/PickMany";
@@ -232,13 +232,13 @@ function AddPerson({ orgId, onAdded }: { orgId: string; onAdded: () => Promise<v
   const [label, setLabel] = useState("");
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState("");
-  const ready = /^npub1[02-9ac-hj-np-z]{58}$/.test(npub.trim()) && label.trim();
+  const ready = npub && label.trim();
 
   async function add() {
     setBusy(true);
     setProblem("");
     try {
-      await saveMember(orgId, npub.trim(), label.trim());
+      await saveMember(orgId, npub, label.trim());
       setNpub("");
       setLabel("");
       await onAdded();
@@ -251,12 +251,14 @@ function AddPerson({ orgId, onAdded }: { orgId: string; onAdded: () => Promise<v
 
   return (
     <form className="add-form" onSubmit={(e) => { e.preventDefault(); if (ready) void add(); }}>
-      <input className="field flex-1" placeholder={t("views.people.npubPlaceholder")} value={npub} onChange={(e) => setNpub(e.target.value)} spellCheck={false} autoCapitalize="off" aria-label={t("views.people.npub")} autoFocus />
+      <span className="flex-1 min-w-0">
+        <NpubField value={npub} onChange={setNpub} label={t("views.people.npub")} placeholder={t("views.people.npubPlaceholder")}
+          look={{ inputClassName: "field", buttonClassName: "chip" }} />
+      </span>
       <input className="field" placeholder={t("views.people.labelPlaceholder")} value={label} onChange={(e) => setLabel(e.target.value)} aria-label={t("views.people.label")} />
       <button type="submit" className="chip chip-accent" disabled={busy || !ready}>
         <UserPlus size={14} aria-hidden /> {t("views.people.addOne")}
       </button>
-      {npub.trim() && !npub.trim().startsWith("npub1") && <p className="error w-full text-sm">{t("views.people.npubStarts")}</p>}
       {problem && <p className="error w-full">{problem}</p>}
     </form>
   );
