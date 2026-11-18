@@ -109,7 +109,7 @@ function Home() {
   const t = useT();
   return (
     <div className="page py-10">
-      <div className="card grid max-w-2xl gap-4 p-6">
+      <div className="card grid gap-4 p-6">
       <h1 className="text-3xl font-semibold">{t("ui.app.home.title")}</h1>
       <p className="muted">{t("ui.app.home.body")}</p>
       <div className="flex flex-wrap gap-2">
@@ -164,7 +164,7 @@ function OrgHead() {
 
 function SignIn({ gate }: { gate: ReactNode }) {
   useTour("signin");
-  return <div className="page"><div className="card mx-auto max-w-3xl p-6">{gate}</div></div>;
+  return <div className="page"><div className="card p-6">{gate}</div></div>;
 }
 
 function WalletPage() {
