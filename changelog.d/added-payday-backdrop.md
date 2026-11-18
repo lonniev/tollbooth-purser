@@ -1,1 +1,0 @@
-- The site wears "Payday on the Ship" as its backdrop, washed so cards and headings stay legible in both themes; the home page introduces Purser on a card over it.

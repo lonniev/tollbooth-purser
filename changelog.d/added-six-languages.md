@@ -1,1 +1,0 @@
-- Purser reads in English, French, Spanish, Japanese, Chinese and Hindi. A guest starts in their country's language; the chooser is on Profile. The shared web package does the translating; Purser supplies only its words.
