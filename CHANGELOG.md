@@ -2,6 +2,12 @@
 
 Changes not yet released live in `changelog.d/`, one file per change — see the README there for why, and `scripts/changelog.py` for what folds them in at release time.
 
+## [0.1.1] — 2026-11-18
+
+### Fixed
+
+- The MCP Registry listing publishes: its description now fits the registry's 100 characters.
+
 ## [0.1.0] — 2026-11-18
 
 ### Added

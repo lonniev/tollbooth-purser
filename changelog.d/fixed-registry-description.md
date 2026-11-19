@@ -1,1 +1,0 @@
-- The MCP Registry listing publishes: its description now fits the registry's 100 characters.
