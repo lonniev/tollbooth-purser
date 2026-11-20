@@ -2,6 +2,13 @@
 
 Changes not yet released live in `changelog.d/`, one file per change — see the README there for why, and `scripts/changelog.py` for what folds them in at release time.
 
+## [0.1.3] — 2026-11-20
+
+### Changed
+
+- The Profile page now sits in folding groups — You, Money, This site, Operator, About — with its panels side by side in a grid.
+- Language and the tutorial switch are under You, you as a sponsor under Money, and where you are authenticated under This site.
+
 ## [0.1.2] — 2026-11-19
 
 ### Changed
