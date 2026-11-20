@@ -19,9 +19,9 @@ export function tours(): Record<string, Tour> {
     signin: signInTour(),
     wallet: walletTour(),
     account: accountTour("account", [
+      step("account.tutorial", "account.tutorial"),
       step("account.sponsor", "account.sponsor"),
       step("account.proven", "account.proven"),
-      step("account.tutorial", "account.tutorial"),
     ]),
     overview: { page: "overview", steps: [
       step("overview.range", "overview.range"),
