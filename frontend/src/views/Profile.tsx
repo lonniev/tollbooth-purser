@@ -1,7 +1,7 @@
 /**
- * The owner's account page: the package's panels in their one order, with
- * what Purser adds — the npub people ask for as their sponsor, where this
- * page is proven as the owner, and the tutorial switch.
+ * The owner's account page, in the package's folding groups, with what Purser
+ * adds: the language and tutorial switch under You, the npub people ask for as
+ * their sponsor under Money, and where this page is proven under This site.
  */
 
 import { inviteText } from "../lib/invite";
@@ -100,15 +100,15 @@ export default function Profile() {
         npub={session.npub}
         heading={null}
         peers={false}
-        before={
-          <>
-            <AsSponsor npub={session.npub} />
-            <ProvenAt />
-          </>
-        }
-        between={{
-          timezone: <section className="card panel"><h2 className="panel-title mb-2">{t("views.profile.language")}</h2><LanguageChooser /></section>,
-          theme: <section className="card panel"><h2 className="panel-title mb-2">{t("views.profile.tutorial")}</h2><TutorialSwitch /></section>,
+        panels={{
+          you: (
+            <>
+              <section className="card panel"><h2 className="panel-title mb-2">{t("views.profile.language")}</h2><LanguageChooser /></section>
+              <section className="card panel"><h2 className="panel-title mb-2">{t("views.profile.tutorial")}</h2><TutorialSwitch /></section>
+            </>
+          ),
+          money: <AsSponsor npub={session.npub} />,
+          site: <ProvenAt />,
         }}
         usage={{ classNames: USAGE }}
         theme={{ classNames: { chip: "chip", active: "chip chip-on" } }}
@@ -120,7 +120,7 @@ export default function Profile() {
         }}
         onSignOut={session.signOut}
         classNames={{
-          root: "account-grid",
+          root: "account-groups", group: "account-group", groupSummary: "account-group-title", groupBody: "account-grid",
           section: "card panel",
           sectionHeading: "panel-title mb-1",
           sectionIntro: "muted mb-2 text-sm",
