@@ -1,0 +1,2 @@
+- The Profile page now sits in folding groups — You, Money, This site, Operator, About — with its panels side by side in a grid.
+- Language and the tutorial switch are under You, you as a sponsor under Money, and where you are authenticated under This site.
