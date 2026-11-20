@@ -2,6 +2,14 @@
 
 Changes not yet released live in `changelog.d/`, one file per change — see the README there for why, and `scripts/changelog.py` for what folds them in at release time.
 
+## [0.1.2] — 2026-11-19
+
+### Changed
+
+- Hindi addresses the reader informally (तुम), like Spanish, Chinese and French; quotations keep their own words.
+
+- The MCP Registry listing carries a title (Purser) and a link to https://purser.tollbooth-dpyc.com.
+
 ## [0.1.1] — 2026-11-18
 
 ### Fixed
