@@ -1,7 +1,9 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.lonniev/tollbooth-purser",
+  "title": "Purser",
   "description": "Purser — an Organization funds its people's use of Tollbooth DPYC Operators: budgets and analytics",
+  "websiteUrl": "https://purser.tollbooth-dpyc.com",
   "version": "0.1.1",
   "repository": {
     "url": "https://github.com/lonniev/tollbooth-purser",
