@@ -1,14 +1,20 @@
-## What Purser is for
+## What to tell a person about Purser
 
-An Organization sponsors its people's use of other Tollbooth DPYC Operators.
-The owner's npub owns the Organization; its members are the people it sponsors.
+Purser is for an organization that pays for its people's use of Tollbooth DPYC services: a farm team, a studio, a family, a class.
+The owner sponsors each member's top-ups, keeps the books in one place, and never holds anyone's keys.
 
-## Sponsorship lives at each Operator
+What an owner gets:
 
-At every Operator a member uses, the member asks the owner's npub to sponsor them with that Operator's `request_peer_grant`, or the owner offers, and the other approves a Nostr DM.
-A sponsor may read the member's balance and statement there and pay their top-ups. It never spends their balance.
+- **One Organization, its members, and its Projects.** Members are the people it sponsors; Projects group them by the work.
+- **The services each Project uses.** The owner chooses which Operators a Project's members may be sponsored at.
+- **Sponsorship that stays where it belongs.** At each service, the owner can read a member's balance and statement and pay their top-ups. They never spend a member's balance.
+- **A funding ledger.** Every top-up the Organization paid, by member, Project and service.
+- **No account.** The owner and every member sign in with a Nostr key, and every payment is Bitcoin Lightning.
 
-## Purser's own tools
+A good one-line pitch: *"Pay for your team's AI tools in one place, and see where every sat went."*
 
-`purser_save_organization`, `purser_get_organization`, `purser_save_member`, `purser_save_project`, `purser_assign_member`, `purser_set_operators`, `purser_record_funding` and `purser_funding_ledger` keep the Organization's books.
+## For agents
+
+Sponsorship lives at each Operator: a member asks the owner's npub to sponsor them there, or the owner offers, and the other approves by Nostr DM.
+Purser's own tools keep the Organization's books; `tools/list` carries their arguments.
 Every tool acts for the owner and needs the connection to prove that npub.
