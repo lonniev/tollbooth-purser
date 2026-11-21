@@ -5,10 +5,10 @@ The owner sponsors each member's top-ups, keeps the books in one place, and neve
 
 What an owner gets:
 
-- **One Organization, its members, and its Projects.** Members are the people it sponsors; Projects group them by the work.
-- **The services each Project uses.** The owner chooses which Operators a Project's members may be sponsored at.
+- **One Organization, its members, and its Projects.** Members are the people it sponsors; each Project has a budget and the members working on it.
+- **The services its people use.** The owner names the Operators the Organization's people use.
 - **Sponsorship that stays where it belongs.** At each service, the owner can read a member's balance and statement and pay their top-ups. They never spend a member's balance.
-- **A funding ledger.** Every top-up the Organization paid, by member, Project and service.
+- **A funding ledger.** Every top-up the Organization paid, booked to a member and a Project.
 - **No account.** The owner and every member sign in with a Nostr key, and every payment is Bitcoin Lightning.
 
 A good one-line pitch: *"Pay for your team's AI tools in one place, and see where every sat went."*
