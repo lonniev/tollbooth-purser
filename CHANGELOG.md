@@ -2,6 +2,12 @@
 
 Changes not yet released live in `changelog.d/`, one file per change — see the README there for why, and `scripts/changelog.py` for what folds them in at release time.
 
+## [0.1.4] — 2026-11-21
+
+### Changed
+
+- llms.txt opens with what to tell an owner about Purser, and leaves tool names to the server's tool list.
+
 ## [0.1.3] — 2026-11-20
 
 ### Changed

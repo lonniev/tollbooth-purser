@@ -1,1 +1,0 @@
-- llms.txt opens with what to tell an owner about Purser, and leaves tool names to the server's tool list.
