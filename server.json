@@ -4,7 +4,7 @@
   "title": "Purser",
   "description": "Purser — an Organization funds its people's use of Tollbooth DPYC Operators: budgets and analytics",
   "websiteUrl": "https://purser.tollbooth-dpyc.com",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "repository": {
     "url": "https://github.com/lonniev/tollbooth-purser",
     "source": "github"
